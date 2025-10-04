@@ -1,0 +1,1296 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="MusicPro - Gerencie seu repertório musical">
+    <meta name="theme-color" content="#0A84FF">
+    <title>MusicPro - Repertório Musical</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --unit: 8px;
+            --color-brand: #0A84FF;
+            --color-brand-light: #409CFF;
+            --color-text-primary: #000000;
+            --color-text-secondary: #8E8E93;
+            --color-text-tertiary: #AEAEB2;
+            --color-background: #FFFFFF;
+            --color-surface-secondary: #F2F2F7;
+            --color-border: #E5E5EA;
+            --color-success: #34C759;
+            --color-warning: #FF9500;
+            --color-danger: #FF3B30;
+            --font-family-sans: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            --font-family-mono: 'SF Mono', 'Menlo', 'Courier New', monospace;
+            --large-title: 34px;
+            --title-1: 28px;
+            --title-2: 22px;
+            --body: 17px;
+            --subhead: 15px;
+            --caption: 12px;
+        }
+
+        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+        
+        body {
+            font-family: var(--font-family-sans);
+            background: linear-gradient(135deg, #E8E8ED 0%, #D1D1D6 100%);
+            color: var(--color-text-primary);
+            font-size: var(--body);
+            margin: 0;
+            padding: 0;
+            min-height: 100vh;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
+
+        @media (min-width: 768px) {
+            body {
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                padding: 20px;
+            }
+        }
+
+        #app {
+            width: 100%;
+            height: 100vh;
+            background-color: var(--color-background);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            position: relative;
+        }
+
+        @media (min-width: 768px) {
+            #app {
+                max-width: 420px;
+                max-height: 900px;
+                height: 95vh;
+                border-radius: 48px;
+                box-shadow: 0 30px 90px rgba(0, 0, 0, 0.2), 0 0 1px rgba(0, 0, 0, 0.1);
+            }
+        }
+
+        @media (min-width: 1024px) {
+            #app {
+                max-width: 600px;
+                max-height: none;
+            }
+        }
+
+        @media (min-width: 1440px) {
+            #app {
+                max-width: 800px;
+            }
+        }
+
+        main {
+            flex-grow: 1;
+            overflow-y: auto;
+            scroll-behavior: smooth;
+        }
+        
+        .view {
+            padding: 0 calc(var(--unit) * 2.5);
+            animation: fadeIn 0.5s ease forwards;
+        }
+
+        @media (min-width: 1024px) {
+            .view {
+                padding: 0 calc(var(--unit) * 4);
+            }
+        }
+        
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+        .main-header {
+            padding: var(--unit) 0 calc(var(--unit) * 2);
+            background-color: var(--color-background);
+            position: sticky;
+            top: 0;
+            z-index: 5;
+        }
+        
+        .main-header h2 {
+            font-size: var(--large-title);
+            font-weight: 700;
+            margin: 0 0 calc(var(--unit) * 2) 0;
+            padding-top: calc(var(--unit) * 2);
+            letter-spacing: -0.5px;
+        }
+
+        @media (min-width: 768px) {
+            .main-header h2 {
+                font-size: 38px;
+            }
+        }
+
+        @media (min-width: 1024px) {
+            .main-header h2 {
+                font-size: 42px;
+            }
+        }
+        
+        #search-input {
+            width: 100%;
+            padding: calc(var(--unit) * 1.75) calc(var(--unit) * 2);
+            border: none;
+            border-radius: calc(var(--unit) * 1.5);
+            font-size: var(--body);
+            background-color: var(--color-surface-secondary);
+            transition: all 0.2s ease;
+        }
+        
+        #search-input:focus {
+            outline: none;
+            background-color: #EEEEF3;
+            box-shadow: 0 0 0 3px rgba(10, 132, 255, 0.15);
+        }
+
+        .list-container {
+            border-top: 1px solid var(--color-border);
+        }
+
+        @media (min-width: 1024px) {
+            .list-container {
+                display: grid;
+                grid-template-columns: repeat(2, 1fr);
+                gap: 0;
+                border-top: none;
+            }
+
+            .list-container .song-card {
+                border-right: 1px solid var(--color-border);
+                border-top: 1px solid var(--color-border);
+                padding: calc(var(--unit) * 2.25) calc(var(--unit) * 2);
+            }
+
+            .list-container .song-card:nth-child(2n) {
+                border-right: none;
+            }
+        }
+
+        @media (min-width: 1440px) {
+            .list-container {
+                grid-template-columns: repeat(3, 1fr);
+            }
+
+            .list-container .song-card:nth-child(2n) {
+                border-right: 1px solid var(--color-border);
+            }
+
+            .list-container .song-card:nth-child(3n) {
+                border-right: none;
+            }
+        }
+        
+        .song-card {
+            background: transparent;
+            padding: calc(var(--unit) * 2.25) 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            cursor: pointer;
+            border-bottom: 1px solid var(--color-border);
+            transition: background-color 0.2s ease;
+        }
+        
+        .song-card:hover {
+            background-color: rgba(0, 0, 0, 0.02);
+        }
+        
+        .song-info { flex-grow: 1; }
+        
+        .song-info h3 { 
+            font-size: var(--body); 
+            font-weight: 600; 
+            margin: 0 0 4px 0;
+            letter-spacing: -0.2px;
+        }
+        
+        .song-info p { 
+            margin: 0; 
+            color: var(--color-text-secondary); 
+            font-size: var(--subhead);
+            font-weight: 500;
+        }
+
+        .status-button {
+            border: 1.5px solid var(--color-border);
+            background-color: transparent;
+            border-radius: 20px;
+            padding: calc(var(--unit) * 0.75) calc(var(--unit) * 1.75);
+            font-size: var(--caption);
+            font-weight: 600;
+            cursor: pointer;
+            min-width: 96px;
+            text-align: center;
+            color: var(--color-text-secondary);
+            transition: all 0.2s ease;
+        }
+        
+        .status-button:hover {
+            transform: scale(1.05);
+        }
+        
+        .status-nova { 
+            border-style: dashed;
+            border-color: var(--color-text-tertiary);
+            color: var(--color-text-tertiary);
+        }
+        
+        .status-estudando { 
+            color: var(--color-warning); 
+            border-color: var(--color-warning);
+            background-color: rgba(255, 149, 0, 0.08);
+        }
+        
+        .status-dominada { 
+            background: linear-gradient(135deg, var(--color-success) 0%, #30CC54 100%);
+            color: #FFFFFF; 
+            border-color: var(--color-success);
+            box-shadow: 0 2px 8px rgba(52, 199, 89, 0.25);
+        }
+
+        footer {
+            border-top: 1px solid rgba(0, 0, 0, 0.08);
+            display: flex;
+            justify-content: space-around;
+            align-items: stretch;
+            padding-top: calc(var(--unit) * 1.5);
+            background: linear-gradient(to bottom, rgba(255, 255, 255, 0.8), rgba(255, 255, 255, 0.95));
+            backdrop-filter: blur(20px) saturate(180%);
+            -webkit-backdrop-filter: blur(20px) saturate(180%);
+            z-index: 10;
+            padding-bottom: env(safe-area-inset-bottom);
+        }
+
+        @media (min-width: 768px) {
+            footer {
+                border-radius: 0 0 48px 48px;
+            }
+        }
+        
+        .nav-button {
+            background: none; 
+            border: none; 
+            color: var(--color-text-tertiary);
+            cursor: pointer; 
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 4px;
+            padding-bottom: calc(var(--unit) * 1.5);
+            transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        
+        .nav-button svg { 
+            stroke-width: 1.8px;
+            transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        
+        .nav-button span { 
+            font-size: 10px; 
+            font-weight: 600;
+            letter-spacing: 0.2px;
+        }
+        
+        .nav-button.active { 
+            color: var(--color-brand);
+        }
+        
+        .nav-button.active svg {
+            transform: translateY(-2px);
+        }
+
+        #add-button {
+            background: linear-gradient(135deg, var(--color-brand) 0%, var(--color-brand-light) 100%);
+            color: white; 
+            border: none;
+            width: 56px; 
+            height: 56px;
+            border-radius: 50%;
+            font-size: 32px;
+            line-height: 56px;
+            cursor: pointer;
+            box-shadow: 0 8px 24px rgba(10, 132, 255, 0.35), 0 2px 8px rgba(10, 132, 255, 0.2);
+            position: fixed;
+            bottom: calc(var(--unit) * 10);
+            right: calc(var(--unit) * 3);
+            z-index: 11;
+            transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+
+        @media (min-width: 768px) {
+            #add-button {
+                position: absolute;
+                bottom: calc(var(--unit) * 10);
+                left: 50%;
+                right: auto;
+                transform: translateX(-50%);
+            }
+        }
+        
+        #add-button:hover {
+            box-shadow: 0 12px 32px rgba(10, 132, 255, 0.4), 0 4px 12px rgba(10, 132, 255, 0.25);
+        }
+
+        @media (min-width: 768px) {
+            #add-button:hover {
+                transform: translateX(-50%) translateY(-2px);
+            }
+        }
+        
+        #add-button.hidden {
+            transform: scale(0.5);
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        @media (min-width: 768px) {
+            #add-button.hidden {
+                transform: translateX(-50%) scale(0.5);
+            }
+        }
+
+        button:active, .song-card:active {
+            transform: scale(0.97);
+        }
+
+        @media (hover: hover) {
+            button:active, .song-card:active {
+                transform: scale(0.98);
+            }
+        }
+        
+        #add-button:active { 
+            transform: scale(0.9); 
+        }
+
+        @media (min-width: 768px) {
+            #add-button:active { 
+                transform: translateX(-50%) scale(0.9); 
+            }
+        }
+
+        .details-header { 
+            display: flex; 
+            justify-content: space-between; 
+            align-items: center; 
+            padding: var(--unit) calc(var(--unit) * 1.5) var(--unit) var(--unit); 
+            background-color: var(--color-background); 
+        }
+        
+        .back-button { 
+            font-size: var(--body); 
+            color: var(--color-brand); 
+            background: none; 
+            border: none; 
+            padding: var(--unit) calc(var(--unit) * 2); 
+            cursor: pointer; 
+            display: flex; 
+            align-items: center; 
+            gap: 4px; 
+            font-weight: 400; 
+        }
+        
+        .back-button svg { width: 24px; height: 24px; }
+        
+        .details-actions { 
+            display: flex; 
+            gap: var(--unit);
+            flex-wrap: wrap;
+        }
+
+        @media (min-width: 1024px) {
+            .details-actions {
+                gap: calc(var(--unit) * 1.5);
+            }
+        }
+        
+        .edit-button, .add-to-setlist-button { 
+            font-size: var(--subhead); 
+            font-weight: 600; 
+            border: none; 
+            padding: calc(var(--unit) * 1.5) calc(var(--unit) * 2.5); 
+            border-radius: calc(var(--unit) * 1.5); 
+            cursor: pointer;
+            transition: all 0.2s ease;
+            flex: 1;
+            min-width: 120px;
+        }
+        
+        .edit-button { 
+            background-color: var(--color-surface-secondary); 
+            color: var(--color-text-primary);
+        }
+        
+        .edit-button:hover {
+            background-color: #E8E8ED;
+        }
+        
+        .add-to-setlist-button { 
+            background: linear-gradient(135deg, var(--color-brand) 0%, var(--color-brand-light) 100%);
+            color: white;
+            box-shadow: 0 2px 8px rgba(10, 132, 255, 0.25);
+        }
+        
+        .add-to-setlist-button:hover {
+            box-shadow: 0 4px 12px rgba(10, 132, 255, 0.3);
+            transform: translateY(-1px);
+        }
+        
+        .song-details { 
+            padding: 0 calc(var(--unit) * 2.5) calc(var(--unit) * 2.5); 
+            background-color: var(--color-background); 
+        }
+        
+        .song-details h2 { font-size: var(--title-1); margin-bottom: var(--unit); }
+        
+        .song-details p { 
+            font-size: var(--body); 
+            color: var(--color-text-secondary); 
+            margin-bottom: calc(var(--unit) * 3); 
+        }
+        
+        .chords { 
+            background: linear-gradient(135deg, #F8F8FA 0%, #F2F2F7 100%);
+            padding: calc(var(--unit) * 3); 
+            border-radius: calc(var(--unit) * 2); 
+            white-space: pre-wrap; 
+            font-family: var(--font-family-mono); 
+            line-height: 1.8; 
+            font-size: 15px;
+            border: 1px solid var(--color-border);
+            box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.05);
+            word-wrap: break-word;
+            overflow-x: auto;
+        }
+
+        @media (min-width: 1024px) {
+            .chords {
+                font-size: 16px;
+                padding: calc(var(--unit) * 4);
+            }
+        }
+        
+        .add-form { 
+            display: flex; 
+            flex-direction: column; 
+            padding: 0 calc(var(--unit) * 2.5) calc(var(--unit) * 2.5); 
+            gap: calc(var(--unit) * 2); 
+            background-color: var(--color-background); 
+        }
+        
+        .add-form h2 { 
+            font-size: var(--large-title); 
+            margin-bottom: var(--unit); 
+        }
+        
+        .add-form input, .add-form textarea { 
+            width: 100%; 
+            padding: calc(var(--unit) * 2); 
+            border: none; 
+            border-radius: calc(var(--unit) * 1.5); 
+            font-size: var(--body); 
+            background-color: var(--color-surface-secondary); 
+            border: 1px solid var(--color-border);
+            font-family: inherit;
+        }
+        
+        .form-buttons { 
+            display: flex; 
+            gap: var(--unit); 
+            margin-top: var(--unit);
+            flex-wrap: wrap;
+        }
+        
+        .form-buttons button { 
+            flex-grow: 1; 
+            min-width: 140px;
+            padding: calc(var(--unit) * 2); 
+            border: none; 
+            border-radius: calc(var(--unit) * 1.5); 
+            font-size: var(--body); 
+            font-weight: 600; 
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        @media (min-width: 768px) {
+            .form-buttons {
+                gap: calc(var(--unit) * 1.5);
+            }
+        }
+        
+        .save-button { 
+            background: linear-gradient(135deg, var(--color-success) 0%, #30CC54 100%);
+            color: white;
+            box-shadow: 0 2px 8px rgba(52, 199, 89, 0.25);
+        }
+        
+        .save-button:hover {
+            box-shadow: 0 4px 12px rgba(52, 199, 89, 0.3);
+            transform: translateY(-1px);
+        }
+        
+        .delete-button { 
+            background: linear-gradient(135deg, var(--color-danger) 0%, #FF6059 100%);
+            color: white;
+            box-shadow: 0 2px 8px rgba(255, 59, 48, 0.25);
+        }
+        
+        .delete-button:hover {
+            box-shadow: 0 4px 12px rgba(255, 59, 48, 0.3);
+            transform: translateY(-1px);
+        }
+        
+        .empty-state { 
+            text-align: center; 
+            padding: calc(var(--unit) * 8) calc(var(--unit) * 2.5); 
+            color: var(--color-text-secondary);
+            grid-column: 1 / -1;
+        }
+
+        @media (min-width: 768px) {
+            .empty-state {
+                padding: calc(var(--unit) * 12) calc(var(--unit) * 4);
+                font-size: 18px;
+            }
+        }
+
+        .modal-backdrop { 
+            position: fixed; 
+            top: 0; 
+            left: 0; 
+            width: 100%; 
+            height: 100%; 
+            background-color: rgba(0, 0, 0, 0.5); 
+            z-index: 100; 
+            backdrop-filter: blur(10px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            animation: fadeIn 0.2s ease;
+        }
+        
+        .modal-content { 
+            background-color: var(--color-background);
+            padding: calc(var(--unit) * 3); 
+            border-radius: calc(var(--unit) * 3); 
+            width: 90%; 
+            max-width: 350px; 
+            max-height: 70vh;
+            overflow-y: auto;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            animation: slideUp 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+
+        @media (min-width: 768px) {
+            .modal-content {
+                max-width: 450px;
+                padding: calc(var(--unit) * 4);
+            }
+        }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .modal-content h3 {
+            font-size: var(--title-2);
+            margin: 0 0 calc(var(--unit) * 2) 0;
+            font-weight: 600;
+        }
+
+        .modal-list {
+            list-style: none;
+            padding: 0;
+            margin: 0 0 calc(var(--unit) * 2) 0;
+        }
+
+        .modal-list-item {
+            padding: calc(var(--unit) * 2);
+            border-bottom: 1px solid var(--color-border);
+            cursor: pointer;
+            transition: background-color 0.2s ease;
+        }
+
+        .modal-list-item:hover {
+            background-color: var(--color-surface-secondary);
+        }
+
+        .modal-list-item h4 {
+            margin: 0 0 4px 0;
+            font-size: var(--body);
+            font-weight: 500;
+        }
+
+        .modal-list-item p {
+            margin: 0;
+            font-size: var(--subhead);
+            color: var(--color-text-secondary);
+        }
+
+        .modal-buttons {
+            display: flex;
+            gap: var(--unit);
+        }
+
+        .modal-buttons button {
+            flex: 1;
+            padding: calc(var(--unit) * 1.5);
+            border: none;
+            border-radius: calc(var(--unit) * 1.5);
+            font-size: var(--body);
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .modal-cancel {
+            background-color: var(--color-surface-secondary);
+            color: var(--color-text-primary);
+        }
+
+        .modal-create {
+            background: linear-gradient(135deg, var(--color-brand) 0%, var(--color-brand-light) 100%);
+            color: white;
+            box-shadow: 0 2px 8px rgba(10, 132, 255, 0.25);
+        }
+
+        .setlist-actions {
+            display: flex;
+            gap: var(--unit);
+            margin-top: calc(var(--unit) * 2);
+            flex-wrap: wrap;
+        }
+
+        @media (min-width: 1024px) {
+            .setlist-actions {
+                gap: calc(var(--unit) * 1.5);
+            }
+        }
+
+        .setlist-action-button {
+            flex: 1;
+            min-width: 140px;
+            padding: calc(var(--unit) * 1.5) calc(var(--unit) * 2);
+            border: none;
+            border-radius: calc(var(--unit) * 1.5);
+            font-size: var(--subhead);
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .play-button {
+            background: linear-gradient(135deg, var(--color-success) 0%, #30CC54 100%);
+            color: white;
+            box-shadow: 0 2px 8px rgba(52, 199, 89, 0.25);
+        }
+
+        .edit-setlist-button {
+            background-color: var(--color-surface-secondary);
+            color: var(--color-text-primary);
+        }
+
+        .stage-view { 
+            background-color: #000000; 
+            color: #FFFFFF; 
+            display: flex; 
+            flex-direction: column; 
+            height: 100vh; 
+            padding: calc(var(--unit) * 2); 
+            box-sizing: border-box;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            z-index: 200;
+        }
+
+        @media (min-width: 768px) {
+            .stage-view {
+                padding: calc(var(--unit) * 4);
+            }
+        }
+
+        @media (min-width: 1024px) {
+            .stage-view {
+                padding: calc(var(--unit) * 6);
+            }
+        }
+        
+        .stage-header { 
+            width: 100%; 
+            padding-bottom: calc(var(--unit) * 2); 
+            margin-bottom: calc(var(--unit) * 2); 
+            border-bottom: 1px solid #333; 
+            display: flex; 
+            justify-content: space-between; 
+            align-items: center;
+            flex-wrap: wrap;
+            gap: var(--unit);
+        }
+        
+        .stage-header-info h3 { 
+            font-size: var(--title-2); 
+            font-weight: 600;
+            margin: 0 0 4px 0;
+        }
+
+        @media (min-width: 768px) {
+            .stage-header-info h3 {
+                font-size: 32px;
+            }
+        }
+
+        @media (min-width: 1024px) {
+            .stage-header-info h3 {
+                font-size: 40px;
+            }
+        }
+        
+        .stage-header-info p { 
+            font-size: var(--subhead); 
+            color: #888; 
+            margin: 0;
+        }
+
+        @media (min-width: 768px) {
+            .stage-header-info p {
+                font-size: 18px;
+            }
+        }
+        
+        .stage-chords { 
+            flex-grow: 1; 
+            overflow-y: auto; 
+            font-family: var(--font-family-mono); 
+            font-size: 16px; 
+            line-height: 1.8; 
+            white-space: pre-wrap; 
+            text-align: left; 
+            padding: 0; 
+            background: none;
+            margin-bottom: calc(var(--unit) * 8);
+            word-wrap: break-word;
+        }
+
+        @media (min-width: 480px) {
+            .stage-chords {
+                font-size: 18px;
+            }
+        }
+
+        @media (min-width: 768px) {
+            .stage-chords {
+                font-size: 22px;
+                line-height: 2;
+            }
+        }
+
+        @media (min-width: 1024px) {
+            .stage-chords {
+                font-size: 26px;
+            }
+        }
+
+        @media (min-width: 1440px) {
+            .stage-chords {
+                font-size: 30px;
+            }
+        }
+        
+        .stage-exit { 
+            background: none; 
+            border: 1px solid #555; 
+            color: #999; 
+            border-radius: var(--unit); 
+            padding: var(--unit) calc(var(--unit) * 2); 
+            font-size: var(--subhead); 
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            white-space: nowrap;
+        }
+
+        @media (min-width: 768px) {
+            .stage-exit {
+                font-size: 18px;
+                padding: calc(var(--unit) * 1.5) calc(var(--unit) * 3);
+            }
+        }
+
+        .stage-exit:hover {
+            border-color: #888;
+            color: #ccc;
+        }
+        
+        .stage-nav { 
+            position: fixed;
+            top: 50%; 
+            transform: translateY(-50%); 
+            background-color: rgba(255, 255, 255, 0.1);
+            border: none; 
+            color: #fff; 
+            font-size: 36px; 
+            padding: calc(var(--unit) * 1.5); 
+            cursor: pointer; 
+            opacity: 0.3; 
+            transition: opacity 0.2s;
+            z-index: 201;
+            border-radius: var(--unit);
+        }
+
+        @media (min-width: 768px) {
+            .stage-nav {
+                font-size: 48px;
+                padding: calc(var(--unit) * 2);
+            }
+        }
+
+        @media (min-width: 1024px) {
+            .stage-nav {
+                font-size: 64px;
+                padding: calc(var(--unit) * 3);
+            }
+        }
+        
+        .stage-nav:hover { 
+            opacity: 0.8;
+            background-color: rgba(255, 255, 255, 0.2);
+        }
+        
+        .stage-nav.prev { left: var(--unit); }
+        .stage-nav.next { right: var(--unit); }
+
+        @media (min-width: 768px) {
+            .stage-nav.prev { left: calc(var(--unit) * 2); }
+            .stage-nav.next { right: calc(var(--unit) * 2); }
+        }
+
+        .stage-counter {
+            font-size: var(--subhead);
+            color: #666;
+            text-align: center;
+            position: fixed;
+            bottom: calc(var(--unit) * 2);
+            left: 50%;
+            transform: translateX(-50%);
+        }
+
+        @media (min-width: 768px) {
+            .stage-counter {
+                font-size: 18px;
+                bottom: calc(var(--unit) * 3);
+            }
+        }
+    </style>
+</head>
+<body>
+    <div id="app">
+        <main id="main-content"></main>
+        <footer>
+            <button id="repertorio-button" class="nav-button">
+                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M9 18V5l12-2v13M9 18a3 3 0 100-6 3 3 0 000 6zm12-2a3 3 0 100-6 3 3 0 000 6z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                <span>Repertorio</span>
+            </button>
+            <button id="setlists-button" class="nav-button">
+                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                <span>Setlists</span>
+            </button>
+        </footer>
+        <button class="add-button" id="add-button">+</button>
+    </div>
+    
+    <script>
+        let songs = [
+            { id: 1, name: "Wonderwall", artist: "Oasis", tone: "Em", status: "Dominada", chords: "[Intro] Em G D A7/4...\n\nToday is gonna be the day..." },
+            { id: 2, name: "Imagine", artist: "John Lennon", tone: "C", status: "Estudando", chords: "[Intro] C Cmaj7 F...\n\nImagine there is no heaven..." },
+            { id: 3, name: "Como Nossos Pais", artist: "Belchior", tone: "Am", status: "Nova", chords: "[Intro] Am G C...\n\nNao quero lhe falar..." },
+        ];
+        let nextSongId = 4;
+        let setlists = [ { id: 1, name: "Show no Barzinho", songIds: [1, 3, 2] } ];
+        let nextSetlistId = 2;
+
+        const mainContent = document.getElementById('main-content');
+        const viewRepertorioButton = document.querySelector('#repertorio-button');
+        const viewSetlistsButton = document.querySelector('#setlists-button');
+        const addButton = document.querySelector('#add-button');
+
+        function renderView(viewFunction) {
+            mainContent.innerHTML = '';
+            viewFunction(mainContent);
+        }
+
+        function cycleSongStatus(songId) {
+            const song = songs.find(function(s) { return s.id === songId; });
+            if (!song) return;
+            const statuses = ["Nova", "Estudando", "Dominada"];
+            const currentIndex = statuses.indexOf(song.status);
+            song.status = statuses[(currentIndex + 1) % statuses.length];
+        }
+
+        function repertorioView(container) {
+            viewRepertorioButton.classList.add('active');
+            viewSetlistsButton.classList.remove('active');
+            addButton.classList.remove('hidden');
+
+            container.innerHTML = '<div class="view"><div class="main-header"><h2>Repertorio</h2><input type="text" id="search-input" placeholder="Pesquisar musicas ou artistas..."></div><div class="list-container" id="song-list-container"></div></div>';
+
+            const searchInput = container.querySelector('#search-input');
+            const songListContainer = container.querySelector('#song-list-container');
+
+            function displaySongs(searchTerm) {
+                searchTerm = searchTerm || '';
+                songListContainer.innerHTML = '';
+                const lowerCaseSearchTerm = searchTerm.toLowerCase();
+                const filteredSongs = songs.filter(function(song) {
+                    return song.name.toLowerCase().includes(lowerCaseSearchTerm) || song.artist.toLowerCase().includes(lowerCaseSearchTerm);
+                });
+
+                if (filteredSongs.length === 0) {
+                    songListContainer.innerHTML = '<p class="empty-state">Nenhuma musica encontrada.</p>';
+                    return;
+                }
+
+                filteredSongs.forEach(function(song) {
+                    const songCard = document.createElement('div');
+                    songCard.className = 'song-card';
+                    songCard.innerHTML = '<div class="song-info"><h3>' + song.name + '</h3><p>' + song.artist + '</p></div><button class="status-button status-' + song.status.toLowerCase() + '">' + song.status + '</button>';
+                    songCard.addEventListener('click', function() {
+                        renderView(songDetailsView(song));
+                    });
+                    const statusButton = songCard.querySelector('.status-button');
+                    statusButton.addEventListener('click', function(event) {
+                        event.stopPropagation();
+                        cycleSongStatus(song.id);
+                        displaySongs(searchInput.value);
+                    });
+                    songListContainer.appendChild(songCard);
+                });
+            }
+
+            searchInput.addEventListener('input', function(e) {
+                displaySongs(e.target.value);
+            });
+            displaySongs();
+        }
+
+        function setlistsView(container) {
+            viewRepertorioButton.classList.remove('active');
+            viewSetlistsButton.classList.add('active');
+            addButton.classList.remove('hidden');
+
+            let listHTML = '';
+            if (setlists.length === 0) {
+                listHTML = '<p class="empty-state">Crie seu primeiro setlist.</p>';
+            } else {
+                setlists.forEach(function(setlist) {
+                    const songCount = setlist.songIds.length;
+                    listHTML += '<div class="song-card" data-setlist-id="' + setlist.id + '"><div class="song-info"><h3>' + setlist.name + '</h3><p>' + songCount + ' musica(s)</p></div></div>';
+                });
+            }
+
+            container.innerHTML = '<div class="view"><div class="main-header"><h2>Setlists</h2></div><div class="list-container">' + listHTML + '</div></div>';
+            
+            container.querySelectorAll('.song-card').forEach(function(card) {
+                card.addEventListener('click', function() {
+                    const setlistId = Number(card.dataset.setlistId);
+                    const setlist = setlists.find(function(s) {
+                        return s.id === setlistId;
+                    });
+                    if (setlist) {
+                        renderView(setlistDetailsView(setlist));
+                    }
+                });
+            });
+        }
+
+        function songDetailsView(song) {
+            return function(container) {
+                addButton.classList.add('hidden');
+                container.innerHTML = '<div class="view"><div class="details-header"><button class="back-button"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M15 18l-6-6 6-6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg><span>Repertorio</span></button></div><div class="song-details"><h2>' + song.name + '</h2><p>' + song.artist + '</p><div class="details-actions"><button class="add-to-setlist-button">Adicionar ao Setlist</button><button class="edit-button">Editar</button></div><pre class="chords">' + song.chords + '</pre></div></div>';
+                container.querySelector('.back-button').addEventListener('click', function() { renderView(repertorioView); });
+                container.querySelector('.edit-button').addEventListener('click', function() { renderView(addSongFormView(song)); });
+                container.querySelector('.add-to-setlist-button').addEventListener('click', function() { openAddToSetlistModal(song); });
+            };
+        }
+
+        function addSongFormView(songToEdit) {
+            return function(container) {
+                const isEditing = songToEdit !== null && songToEdit !== undefined;
+                const title = isEditing ? 'Editar Musica' : 'Adicionar Musica';
+                const buttonLabel = isEditing ? 'Salvar Alteracoes' : 'Salvar Musica';
+
+                container.innerHTML = '<div class="view"><div class="details-header"><button class="back-button"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M15 18l-6-6 6-6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg><span>Cancelar</span></button></div><form class="add-form"><h2>' + title + '</h2><input type="text" id="song-name" placeholder="Nome da Musica" value="' + (isEditing ? songToEdit.name : '') + '" required><input type="text" id="song-artist" placeholder="Artista" value="' + (isEditing ? songToEdit.artist : '') + '" required><input type="text" id="song-tone" placeholder="Tom (ex: C, Am, G)" value="' + (isEditing ? songToEdit.tone : '') + '"><textarea id="song-chords" placeholder="Cole a cifra aqui..." rows="10">' + (isEditing ? songToEdit.chords : '') + '</textarea><div class="form-buttons"><button type="submit" class="save-button">' + buttonLabel + '</button>' + (isEditing ? '<button type="button" class="delete-button">Apagar Musica</button>' : '') + '</div></form></div>';
+
+                const backButton = container.querySelector('.back-button');
+                if (isEditing) {
+                    backButton.addEventListener('click', function() { renderView(songDetailsView(songToEdit)); });
+                } else {
+                    backButton.addEventListener('click', function() { renderView(repertorioView); });
+                }
+
+                if (isEditing) {
+                    const deleteButton = container.querySelector('.delete-button');
+                    deleteButton.addEventListener('click', function() {
+                        if (confirm('Tem certeza que quer apagar "' + songToEdit.name + '"?')) {
+                            songs = songs.filter(function(s) { return s.id !== songToEdit.id; });
+                            renderView(repertorioView);
+                        }
+                    });
+                }
+
+                container.querySelector('form').addEventListener('submit', function(event) {
+                    event.preventDefault();
+                    if (isEditing) {
+                        const songIndex = songs.findIndex(function(s) { return s.id === songToEdit.id; });
+                        if (songIndex > -1) {
+                            songs[songIndex].name = document.getElementById('song-name').value;
+                            songs[songIndex].artist = document.getElementById('song-artist').value;
+                            songs[songIndex].tone = document.getElementById('song-tone').value;
+                            songs[songIndex].chords = document.getElementById('song-chords').value;
+                            renderView(songDetailsView(songs[songIndex]));
+                        }
+                    } else {
+                        const newSong = {
+                            id: nextSongId++,
+                            name: document.getElementById('song-name').value,
+                            artist: document.getElementById('song-artist').value,
+                            tone: document.getElementById('song-tone').value,
+                            chords: document.getElementById('song-chords').value,
+                            status: 'Nova'
+                        };
+                        songs.push(newSong);
+                        renderView(repertorioView);
+                    }
+                });
+            };
+        }
+
+        function openAddToSetlistModal(song) {
+            const modal = document.createElement('div');
+            modal.className = 'modal-backdrop';
+            
+            let setlistsHTML = '';
+            if (setlists.length === 0) {
+                setlistsHTML = '<p class="empty-state">Voce ainda nao tem setlists.</p>';
+            } else {
+                setlistsHTML = '<ul class="modal-list">';
+                setlists.forEach(function(setlist) {
+                    const hasSong = setlist.songIds.includes(song.id);
+                    setlistsHTML += '<li class="modal-list-item" data-setlist-id="' + setlist.id + '"><h4>' + setlist.name + ' ' + (hasSong ? '✓' : '') + '</h4><p>' + setlist.songIds.length + ' musica(s)</p></li>';
+                });
+                setlistsHTML += '</ul>';
+            }
+
+            modal.innerHTML = '<div class="modal-content"><h3>Adicionar a Setlist</h3>' + setlistsHTML + '<div class="modal-buttons"><button class="modal-cancel">Cancelar</button><button class="modal-create">Novo Setlist</button></div></div>';
+
+            document.body.appendChild(modal);
+
+            modal.querySelector('.modal-cancel').addEventListener('click', function() {
+                document.body.removeChild(modal);
+            });
+
+            modal.querySelector('.modal-create').addEventListener('click', function() {
+                document.body.removeChild(modal);
+                renderView(createSetlistFormView(song));
+            });
+
+            modal.querySelectorAll('.modal-list-item').forEach(function(item) {
+                item.addEventListener('click', function() {
+                    const setlistId = Number(item.dataset.setlistId);
+                    const setlist = setlists.find(function(s) { return s.id === setlistId; });
+                    
+                    if (setlist.songIds.includes(song.id)) {
+                        setlist.songIds = setlist.songIds.filter(function(id) { return id !== song.id; });
+                    } else {
+                        setlist.songIds.push(song.id);
+                    }
+                    
+                    document.body.removeChild(modal);
+                });
+            });
+
+            modal.addEventListener('click', function(e) {
+                if (e.target === modal) {
+                    document.body.removeChild(modal);
+                }
+            });
+        }
+
+        function createSetlistFormView(songToAdd) {
+            return function(container) {
+                addButton.classList.add('hidden');
+                
+                container.innerHTML = '<div class="view"><div class="details-header"><button class="back-button"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M15 18l-6-6 6-6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg><span>Cancelar</span></button></div><form class="add-form"><h2>Criar Setlist</h2><input type="text" id="setlist-name" placeholder="Nome do Setlist" required><div class="form-buttons"><button type="submit" class="save-button">Criar Setlist</button></div></form></div>';
+
+                container.querySelector('.back-button').addEventListener('click', function() {
+                    renderView(songToAdd ? songDetailsView(songToAdd) : setlistsView);
+                });
+
+                container.querySelector('form').addEventListener('submit', function(e) {
+                    e.preventDefault();
+                    const newSetlist = {
+                        id: nextSetlistId++,
+                        name: document.getElementById('setlist-name').value,
+                        songIds: songToAdd ? [songToAdd.id] : []
+                    };
+                    setlists.push(newSetlist);
+                    renderView(setlistDetailsView(newSetlist));
+                });
+            };
+        }
+
+        function setlistDetailsView(setlist) {
+            return function(container) {
+                addButton.classList.add('hidden');
+                
+                const setlistSongs = setlist.songIds
+                    .map(function(id) { return songs.find(function(s) { return s.id === id; }); })
+                    .filter(function(s) { return s !== undefined; });
+
+                let songsHTML = '';
+                if (setlistSongs.length === 0) {
+                    songsHTML = '<p class="empty-state">Nenhuma musica neste setlist.</p>';
+                } else {
+                    setlistSongs.forEach(function(song) {
+                        songsHTML += '<div class="song-card" data-song-id="' + song.id + '"><div class="song-info"><h3>' + song.name + '</h3><p>' + song.artist + '</p></div></div>';
+                    });
+                }
+
+                container.innerHTML = '<div class="view"><div class="details-header"><button class="back-button"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M15 18l-6-6 6-6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg><span>Setlists</span></button></div><div class="song-details"><h2>' + setlist.name + '</h2><p>' + setlistSongs.length + ' musica(s)</p><div class="setlist-actions">' + (setlistSongs.length > 0 ? '<button class="setlist-action-button play-button">▶ Modo Palco</button>' : '') + '<button class="setlist-action-button edit-setlist-button">Editar</button></div></div><div class="list-container">' + songsHTML + '</div></div>';
+
+                container.querySelector('.back-button').addEventListener('click', function() { renderView(setlistsView); });
+                
+                const playButton = container.querySelector('.play-button');
+                if (playButton) {
+                    playButton.addEventListener('click', function() { openStageMode(setlist, setlistSongs); });
+                }
+
+                container.querySelector('.edit-setlist-button').addEventListener('click', function() {
+                    renderView(editSetlistFormView(setlist));
+                });
+                
+                container.querySelectorAll('.song-card').forEach(function(card) {
+                    card.addEventListener('click', function() {
+                        const songId = Number(card.dataset.songId);
+                        const song = songs.find(function(s) { return s.id === songId; });
+                        if (song) {
+                            renderView(songDetailsView(song));
+                        }
+                    });
+                });
+            };
+        }
+
+        function editSetlistFormView(setlist) {
+            return function(container) {
+                addButton.classList.add('hidden');
+                
+                container.innerHTML = '<div class="view"><div class="details-header"><button class="back-button"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M15 18l-6-6 6-6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg><span>Cancelar</span></button></div><form class="add-form"><h2>Editar Setlist</h2><input type="text" id="setlist-name" placeholder="Nome do Setlist" value="' + setlist.name + '" required><div class="form-buttons"><button type="submit" class="save-button">Salvar Alteracoes</button><button type="button" class="delete-button">Apagar Setlist</button></div></form></div>';
+
+                container.querySelector('.back-button').addEventListener('click', function() {
+                    renderView(setlistDetailsView(setlist));
+                });
+
+                container.querySelector('.delete-button').addEventListener('click', function() {
+                    if (confirm('Tem certeza que quer apagar "' + setlist.name + '"?')) {
+                        setlists = setlists.filter(function(s) { return s.id !== setlist.id; });
+                        renderView(setlistsView);
+                    }
+                });
+
+                container.querySelector('form').addEventListener('submit', function(e) {
+                    e.preventDefault();
+                    setlist.name = document.getElementById('setlist-name').value;
+                    renderView(setlistDetailsView(setlist));
+                });
+            };
+        }
+
+        function openStageMode(setlist, setlistSongs) {
+            let currentIndex = 0;
+
+            function renderStage() {
+                const currentSong = setlistSongs[currentIndex];
+                const stageView = document.createElement('div');
+                stageView.className = 'stage-view';
+
+                stageView.innerHTML = '<div class="stage-header"><div class="stage-header-info"><h3>' + currentSong.name + '</h3><p>' + currentSong.artist + ' - ' + currentSong.tone + '</p></div><button class="stage-exit">✕ Sair</button></div><pre class="stage-chords">' + currentSong.chords + '</pre><div class="stage-counter">' + (currentIndex + 1) + ' / ' + setlistSongs.length + '</div>' + (currentIndex > 0 ? '<button class="stage-nav prev">‹</button>' : '') + (currentIndex < setlistSongs.length - 1 ? '<button class="stage-nav next">›</button>' : '');
+
+                document.body.appendChild(stageView);
+
+                stageView.querySelector('.stage-exit').addEventListener('click', function() {
+                    document.body.removeChild(stageView);
+                });
+
+                const prevButton = stageView.querySelector('.stage-nav.prev');
+                if (prevButton) {
+                    prevButton.addEventListener('click', function() {
+                        document.body.removeChild(stageView);
+                        currentIndex--;
+                        renderStage();
+                    });
+                }
+
+                const nextButton = stageView.querySelector('.stage-nav.next');
+                if (nextButton) {
+                    nextButton.addEventListener('click', function() {
+                        document.body.removeChild(stageView);
+                        currentIndex++;
+                        renderStage();
+                    });
+                }
+
+                function handleKeyPress(e) {
+                    if (e.key === 'ArrowLeft' && currentIndex > 0) {
+                        document.body.removeChild(stageView);
+                        currentIndex--;
+                        renderStage();
+                    } else if (e.key === 'ArrowRight' && currentIndex < setlistSongs.length - 1) {
+                        document.body.removeChild(stageView);
+                        currentIndex++;
+                        renderStage();
+                    } else if (e.key === 'Escape') {
+                        document.body.removeChild(stageView);
+                        document.removeEventListener('keydown', handleKeyPress);
+                    }
+                }
+
+                document.addEventListener('keydown', handleKeyPress);
+            }
+
+            renderStage();
+        }
+
+        viewRepertorioButton.addEventListener('click', function() { renderView(repertorioView); });
+        viewSetlistsButton.addEventListener('click', function() { renderView(setlistsView); });
+        addButton.addEventListener('click', function() {
+            if (viewSetlistsButton.classList.contains('active')) {
+                renderView(createSetlistFormView());
+            } else {
+                renderView(addSongFormView());
+            }
+        });
+
+        renderView(repertorioView);
+    </script>
+</body>
+</html> 
