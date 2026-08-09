@@ -292,7 +292,9 @@
   .doc .valor{border:2px solid #000;display:flex;justify-content:space-between;align-items:center;padding:9px 14px;margin-top:11px}
   .doc .valor .vk{font-size:10px;letter-spacing:.14em;text-transform:uppercase;font-weight:700}
   .doc .valor .vv{font-family:var(--mono);font-size:22px;font-weight:700}
-  @media print{ .app,.savebar,.nav,#toast,#login{display:none!important} #printDoc{display:block} }
+  @media print{ .app,.savebar,.nav,#toast,#login{display:none!important} #printDoc{display:block}
+    body.printrot #printDoc{position:absolute;top:0;left:210mm;width:297mm;height:210mm;transform:rotate(90deg);transform-origin:top left;padding:6mm}
+  }
   /* OS = meia folha paisagem (A5), com linha de dobra/corte à direita */
   .doc.os{width:14.3cm;min-height:19cm;border-right:1px dashed #999;padding-right:.5cm;position:relative;display:flex;flex-direction:column}
   .doc.os .foot{margin-top:auto;padding-top:10px}
@@ -892,9 +894,12 @@ function printOrdem(id,mode){const o=S.ordens.find(x=>x.id===id);if(!o)return;co
     const verso=`<div class="osverso"><div class="versobox">Área reservada<br>QR de divulgação<br>(verso)</div><div class="versobrand">ÓRBITA — ${esc(S.config.nome||"")}</div></div>`;
     html=`<div class="ostwo">${doc}${verso}</div>`;
   }
+  const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent||"");
+  const rot = isIOS && mode!=="recibo";
+  document.body.classList.toggle("printrot", rot);
   document.getElementById("pagestyle").textContent = (mode==="recibo")
     ? "@page{size:210mm 297mm;margin:10mm}"
-    : "@page{size:297mm 210mm;margin:8mm}";
+    : (rot ? "@page{size:210mm 297mm;margin:0}" : "@page{size:297mm 210mm;margin:8mm}");
   document.getElementById("printDoc").innerHTML=html;
   setTimeout(()=>window.print(),70);}
 
