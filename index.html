@@ -268,8 +268,8 @@
     align-items:center;justify-content:center;text-align:center;font-size:7px;letter-spacing:.08em;text-transform:uppercase;color:#999;padding:5px}
   .doc .rxp{width:100%;border-collapse:collapse;margin-top:4px}
   .doc .rxp th,.doc .rxp td{border:1.5px solid #000;text-align:center;padding:6px 6px}
-  .doc .rxp thead th{font-size:9px;letter-spacing:.06em;text-transform:uppercase;font-weight:700;background:#f2f2f2}
-  .doc .rxp tbody th{width:1.5cm;font-family:var(--mono);font-weight:700;font-size:13px;background:#f7f7f7}
+  .doc .rxp thead th{font-size:9px;letter-spacing:.06em;text-transform:uppercase;font-weight:700}
+  .doc .rxp tbody th{width:1.5cm;font-family:var(--mono);font-weight:700;font-size:13px}
   .doc .rxp tbody td{font-family:var(--mono);font-size:16px;font-weight:800}
   .doc .med{font-size:12px;margin-top:3px}
   .doc .med .mk{font-weight:700;text-transform:uppercase;font-size:9px;letter-spacing:.1em;margin-right:5px}
@@ -296,10 +296,10 @@
   /* OS = meia folha paisagem (A5), com linha de dobra/corte à direita */
   .doc.os{width:14.3cm;min-height:19cm;border-right:1px dashed #999;padding-right:.5cm;position:relative;display:flex;flex-direction:column}
   .doc.os .foot{margin-top:auto;padding-top:10px}
-  .doc.os .head{flex-wrap:nowrap;gap:10px;align-items:center}
-  .doc.os .brand{align-items:center;flex:1;min-width:0}
-  .doc.os .names{flex-wrap:nowrap;white-space:nowrap;align-items:baseline}
-  .doc.os .doctype{flex:none}
+  .doc.os .head{flex-wrap:nowrap;gap:12px;align-items:flex-start}
+  .doc.os .brand{align-items:flex-start;flex:1 1 auto;min-width:0}
+  .doc.os .names{flex-wrap:wrap;align-items:baseline;column-gap:8px;row-gap:0}
+  .doc.os .doctype{flex:0 0 auto;white-space:nowrap}
   .doc.os .wm{font-size:17px;letter-spacing:.06em}
   .doc.os .dash{font-size:14px}
   .doc.os .oticnome{font-size:17px}
@@ -312,11 +312,9 @@
   .doc.os .cliente{font-size:13px}
   .doc.os .codebox{width:1.15cm;height:1.15cm;font-size:5px;border:1px dashed #ccc;color:#c4c4c4;letter-spacing:.04em}
   .doc.os .clibox{display:flex;border:1.5px solid #000;margin-top:8px}
-  .doc.os .clibox .clicell{flex:1;padding:5px 10px 6px;background:#fcfcfc}
+  .doc.os .clibox .clicell{flex:1;padding:5px 10px 6px}
   .doc.os .clibox .codecell{width:2cm;border-left:1.5px solid #000;display:flex;align-items:center;justify-content:center;
     text-align:center;font-size:6px;letter-spacing:.1em;text-transform:uppercase;color:#bbb;line-height:1.6}
-  .doc.os .rxp tbody tr:nth-child(2) td{background:#f2f2f2}
-  .doc.os .ctab tbody tr:nth-child(2) td{background:#f2f2f2}
   .doc.os .obsbox .lbl,.doc.os .tratline .lbl{display:block;margin-bottom:3px}
   .doc.os .headrow{margin-top:7px;align-items:center}
   .doc.os .obsbox{border:1.5px solid #000;margin-top:8px;padding:4px 8px 5px}
@@ -331,14 +329,14 @@
   .doc.os .grid2>.ctab{flex:1.25}
   .doc.os .ctab,.doc.os .ptab{width:100%;border-collapse:collapse;height:100%}
   .doc.os .ctab th,.doc.os .ctab td,.doc.os .ptab th,.doc.os .ptab td{border:1.5px solid #000}
-  .doc.os .ctab thead th{font-size:9px;font-weight:800;text-transform:uppercase;letter-spacing:.03em;background:#ececec;padding:3px 3px}
-  .doc.os .ctab tbody th{font-family:var(--mono);font-weight:700;font-size:11px;background:#f7f7f7;text-align:center;width:.85cm;padding:4px 2px}
+  .doc.os .ctab thead th{font-size:9px;font-weight:800;text-transform:uppercase;letter-spacing:.03em;padding:3px 3px}
+  .doc.os .ctab tbody th{font-family:var(--mono);font-weight:700;font-size:11px;text-align:center;width:.85cm;padding:4px 2px}
   .doc.os .ctab tbody td{font-family:var(--mono);font-weight:800;font-size:14px;text-align:center;padding:4px 2px}
-  .doc.os .ctab .dptot{font-size:16px;vertical-align:middle;background:#fcfcfc}
+  .doc.os .ctab .dptot{font-size:16px;vertical-align:middle}
   .doc.os .statuspill{display:inline-block;background:#000;color:#fff;font-size:8px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;padding:3px 9px;border-radius:3px;margin-top:5px}
   .doc.os .signs{display:flex;gap:12px}
   .doc.os .signs .sign{width:3.9cm}
-  .doc.os .ptab th{text-align:left;font-size:8.5px;text-transform:uppercase;letter-spacing:.05em;background:#f7f7f7;width:1.9cm;font-weight:700;padding:4px 6px}
+  .doc.os .ptab th{text-align:left;font-size:8.5px;text-transform:uppercase;letter-spacing:.05em;width:1.9cm;font-weight:700;padding:4px 6px}
   .doc.os .ptab td{font-size:11px;font-weight:600;padding:4px 6px}
   /* tratamentos */
   .doc.os .tratline{margin-top:8px}
