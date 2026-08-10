@@ -293,7 +293,9 @@
   .doc .valor .vk{font-size:10px;letter-spacing:.14em;text-transform:uppercase;font-weight:700}
   .doc .valor .vv{font-family:var(--mono);font-size:22px;font-weight:700}
   @media print{ .app,.savebar,.nav,#toast,#login{display:none!important} #printDoc{display:block}
-    body.printrot #printDoc{position:absolute;top:0;left:210mm;width:297mm;height:210mm;transform:rotate(90deg);transform-origin:top left;padding:6mm}
+    body.printrot{width:210mm;height:297mm;overflow:hidden;margin:0}
+    body.printrot #printDoc{position:absolute;left:-51mm;top:43.5mm;width:297mm;height:210mm;padding:6mm;
+      transform:rotate(90deg);transform-origin:center center}
   }
   /* OS = meia folha paisagem (A5), com linha de dobra/corte à direita */
   .doc.os{width:14.3cm;min-height:19cm;border-right:1px dashed #999;padding-right:.5cm;position:relative;display:flex;flex-direction:column}
