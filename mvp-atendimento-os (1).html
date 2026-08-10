@@ -1,0 +1,930 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<title>Órbita — Atendimento &amp; OS</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 48 48' fill='none' stroke='%230f7d6e' stroke-width='3'%3E%3Ccircle cx='24' cy='24' r='20'/%3E%3Ccircle cx='24' cy='24' r='5' fill='%230f7d6e' stroke='none'/%3E%3Cpath d='M24 1v6M24 41v6M1 24h6M41 24h6'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#f4f5f2; --surf:#ffffff; --surf2:#f8faf8;
+    --ink:#1b2430; --mut:#79828b; --dim:#aab0b5; --line:#e6e9e5;
+    --acc:#0f7d6e; --acc-d:#0a5d51; --acc-bg:#dcede9; --acc-tint:#eef6f4;
+    --err:#b84a3d; --err-bg:#fbeceb;
+    --blue:#2b6cb0; --amber:#b7791f; --gray:#727b82;
+    --mono:"JetBrains Mono",ui-monospace,SFMono-Regular,Menlo,monospace;
+    --sans:"Inter",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+    --r:20px; --rf:15px;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;overscroll-behavior:none}
+  html{overflow-x:hidden}
+  body{background:var(--bg);color:var(--ink);font-family:var(--sans);font-size:16px;line-height:1.5;
+    -webkit-font-smoothing:antialiased;-webkit-text-size-adjust:100%;letter-spacing:-.005em;
+    overflow-x:hidden;touch-action:pan-y;-webkit-user-select:none;user-select:none;-webkit-tap-highlight-color:transparent}
+  input,textarea,select{-webkit-user-select:text;user-select:text}
+  button,.rxcell,.chip,.mtab,.nav button,.tab,.icobtn{touch-action:manipulation}
+  body.atend{--pb:150px} body{--pb:88px}
+  body.typing{--pb:20px}
+  body.typing .savebar,body.typing .nav{display:none}
+  #printDoc{display:none}
+  .app{max-width:720px;margin:0 auto;padding:0 15px calc(var(--pb) + env(safe-area-inset-bottom))}
+
+  /* header */
+  .head{position:sticky;top:0;z-index:6;background:var(--bg);padding-top:env(safe-area-inset-top)}
+  .top{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:13px 2px 12px}
+  .logo{display:flex;align-items:center;gap:10px}
+  .logo .mk{width:38px;height:38px;border-radius:50%;background:var(--acc-bg);display:flex;align-items:center;justify-content:center;color:var(--acc-d)}
+  .logo b{font-size:19px;font-weight:600;letter-spacing:-.02em}
+  .who{display:flex;align-items:center;gap:10px}
+  .who .id{text-align:right;line-height:1.25}
+  .who .id b{font-size:13px;font-weight:600;display:block}
+  .who .id span{font-size:11px;color:var(--mut)}
+  .who .av{width:38px;height:38px;border-radius:50%;background:var(--acc-bg);color:var(--acc-d);
+    display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:600;flex:none}
+
+  /* page title (atend) */
+  .ptitle{display:flex;align-items:baseline;justify-content:space-between;gap:12px;margin:6px 2px 18px}
+  .ptitle h1{font-size:27px;font-weight:600;letter-spacing:-.02em;margin:0}
+  .ptitle .meta{font-family:var(--mono);font-size:13px;color:var(--mut);white-space:nowrap;flex:none}
+
+  /* cards */
+  .card{background:var(--surf);border:1px solid var(--line);border-radius:var(--r);padding:18px;margin-bottom:14px;
+    box-shadow:0 1px 2px rgba(20,30,25,.03)}
+  .shead{display:flex;align-items:center;gap:11px;margin-bottom:15px}
+  .shead .n{font-family:var(--mono);font-size:12px;color:var(--dim);font-weight:500}
+  .shead .bar{width:1px;height:15px;background:var(--line)}
+  .shead h2{font-size:16px;font-weight:600;margin:0;letter-spacing:-.01em}
+  .shead .eye{margin-left:auto;color:var(--acc);display:flex}
+  .hint{font-size:12.5px;color:var(--mut);margin:-6px 0 14px}
+
+  /* fields */
+  .fgrid{display:grid;gap:11px}
+  @media(min-width:540px){.f2{grid-template-columns:1fr 1fr}}
+  .field{border:1px solid var(--line);border-radius:var(--rf);background:#fff;padding:9px 14px;
+    display:flex;flex-direction:column;gap:1px;position:relative}
+  .field:focus-within{border-color:var(--acc);box-shadow:0 0 0 3px var(--acc-tint)}
+  .field .flab{font-size:12px;color:var(--mut);font-weight:500}
+  .field input,.field select,.field textarea{border:none;background:transparent;padding:0;width:100%;
+    font-size:16px;font-weight:500;color:var(--ink);font-family:var(--sans);min-height:26px}
+  .field input:focus,.field select:focus,.field textarea:focus{outline:none}
+  .field.sel::after{content:"";position:absolute;right:15px;top:50%;width:9px;height:9px;
+    border-right:2px solid var(--mut);border-bottom:2px solid var(--mut);transform:translateY(-70%) rotate(45deg);pointer-events:none}
+  .field select{appearance:none;-webkit-appearance:none;padding-right:20px}
+  .fe{font-size:12px;color:var(--err);margin:8px 2px 0;min-height:0}
+
+  /* badges */
+  .badge{width:44px;height:44px;border-radius:50%;background:var(--acc-bg);color:var(--acc-d);
+    font-family:var(--mono);font-size:13px;font-weight:600;display:flex;align-items:center;justify-content:center;flex:none}
+
+  /* RECEITA — instrument readout */
+  .rxcard{position:relative;border:1px solid #cfe4df;border-radius:var(--rf);background:var(--acc-tint);overflow:hidden}
+  .rxbg{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;pointer-events:none;opacity:.9}
+  .rxgrid{position:relative;padding:8px 12px 0}
+  .rxr{display:grid;grid-template-columns:44px 1fr 1fr .8fr 1fr;align-items:center;gap:4px}
+  .rxhead{padding:10px 0 8px;border-bottom:1px solid #d6e7e2}
+  .rxhead span{text-align:right;padding-right:12px;font-size:11px;color:var(--mut);font-weight:500}
+  .rxhead span:first-child{padding-right:0}
+  .rxhead span i{display:block;font-family:var(--mono);font-size:10px;color:var(--dim);font-style:normal;margin-top:1px}
+  .rxrow{border-bottom:1px solid #d6e7e2}
+  .rxrow .badge{margin:8px 0}
+  .rxrow input{border:none;background:transparent;text-align:center;font-family:var(--mono);font-size:19px;
+    font-weight:500;color:var(--ink);width:100%;padding:16px 0;min-height:56px;letter-spacing:-.02em}
+  .rxrow input:focus{outline:none;background:rgba(255,255,255,.6);border-radius:8px}
+  .rxrow input.bad{background:var(--err-bg);border-radius:8px}
+  .scell{display:flex;align-items:center;justify-content:center;padding:8px 0;min-height:56px;border-radius:8px}
+  .scell:focus-within{background:rgba(255,255,255,.6)}
+  .scell.bad{background:var(--err-bg)}
+  .scell .sgn{border:none;background:transparent;font-family:var(--mono);font-size:20px;font-weight:600;
+    color:var(--acc-d);cursor:pointer;padding:8px 3px 8px 0;line-height:1;-webkit-tap-highlight-color:transparent}
+  .scell .sgn:active{opacity:.5}
+  .scell .mag{border:none!important;background:transparent;text-align:left;font-family:var(--mono);font-size:19px;
+    font-weight:500;color:var(--ink);width:54px;padding:0!important;min-height:auto!important;letter-spacing:-.02em}
+  .scell .mag:focus{background:transparent!important}
+  /* tappable display cells */
+  .rxcell{border:none;background:transparent;font-family:var(--mono);font-size:19px;font-weight:500;color:var(--ink);
+    padding:16px 12px 16px 2px;min-height:56px;cursor:pointer;text-align:right;letter-spacing:-.02em;border-radius:8px;-webkit-tap-highlight-color:transparent}
+  .rxcell:active{background:rgba(255,255,255,.65)}
+  .rxcell.bad{background:var(--err-bg)}
+  .rxcell .ph{color:var(--dim);font-weight:400}
+  /* input modal */
+  .modal{position:fixed;left:0;right:0;top:0;height:100vh;height:100dvh;z-index:50;display:flex;flex-direction:column;background:var(--bg)}
+  .modal[hidden]{display:none}
+  .mhd{display:flex;align-items:center;justify-content:space-between;padding:calc(13px + env(safe-area-inset-top)) 16px 12px;border-bottom:1px solid var(--line);background:var(--surf)}
+  .mhd h3{margin:0;font-size:17px;font-weight:600}
+  .mhd h3 span{color:var(--acc-d)}
+  .mhd .x{background:none;border:none;font-size:26px;color:var(--mut);cursor:pointer;padding:2px 8px;line-height:1}
+  .mbody{flex:1;min-height:0;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:16px;max-width:520px;margin:0 auto;width:100%}
+  .mtabs{display:grid;grid-template-columns:repeat(4,1fr);gap:7px;margin-bottom:14px}
+  .mtab{border:1px solid var(--line);background:#fff;border-radius:12px;padding:9px 3px;text-align:center;cursor:pointer;-webkit-tap-highlight-color:transparent}
+  .mtab .l{font-size:10.5px;color:var(--mut);display:block;margin-bottom:3px}
+  .mtab .v{font-family:var(--mono);font-size:16px;font-weight:600;color:var(--ink)}
+  .mtab .v.ph{color:var(--dim);font-weight:400}
+  .mtab.on{border-color:var(--acc);background:var(--acc-tint)}
+  .mbig{background:var(--acc-tint);border:1px solid #cfe4df;border-radius:16px;padding:20px;text-align:center;margin-bottom:6px}
+  .mbig .cur{font-family:var(--mono);font-size:46px;font-weight:600;color:var(--ink);letter-spacing:-.02em;line-height:1.1;min-height:50px}
+  .mbig .lab{font-size:12px;color:var(--mut);margin-top:6px}
+  .mwarn{color:var(--err);font-size:12.5px;text-align:center;min-height:18px;margin:7px 0 0}
+  .steps{display:flex;gap:10px;margin:16px 0 12px}
+  .steps button{flex:1;border:1px solid transparent;background:var(--acc-bg);border-radius:13px;min-height:60px;font-family:var(--mono);
+    font-size:16px;font-weight:600;color:var(--acc-d);cursor:pointer;-webkit-tap-highlight-color:transparent}
+  .steps button:active{background:#cfe4df}
+  .steps button.sgn{flex:0 0 34%;background:#fff;border-color:var(--line);color:var(--ink)}
+  .pad{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+  .pad button{border:1px solid var(--line);background:#fff;border-radius:14px;min-height:58px;font-family:var(--mono);
+    font-size:23px;font-weight:500;color:var(--ink);cursor:pointer;-webkit-tap-highlight-color:transparent}
+  .pad button:active{background:var(--surf2)}
+  .pad button.clr{background:var(--acc-bg);color:var(--acc-d);border-color:transparent;font-weight:600}
+  .pad button.clr:active{background:#cfe4df}
+  .pad button.sm{font-size:18px;color:var(--acc-d)}
+  .pad button[disabled]{opacity:.28;pointer-events:none}
+  .mftr{padding:12px 16px calc(12px + env(safe-area-inset-bottom));border-top:1px solid var(--line);background:var(--surf)}
+  .mftr .in{max-width:520px;margin:0 auto}
+  .mnav{display:flex;gap:10px;margin:6px 0 4px}
+  .mnav button{flex:1;border:1px solid var(--line);background:#fff;border-radius:12px;min-height:44px;font-weight:600;color:var(--mut);cursor:pointer;font-size:13.5px;font-family:var(--sans)}
+  .mnav button[disabled]{opacity:.35;pointer-events:none}
+  .mftr .btn{width:100%}
+  .rxfoot{display:flex;justify-content:space-between;align-items:center;padding:9px 2px;
+    font-family:var(--mono);font-size:11px;color:var(--mut)}
+
+  /* MEDIÇÕES */
+  .mtable{border:1px solid var(--line);border-radius:var(--rf);overflow:hidden}
+  .mrow{display:grid;grid-template-columns:44px 1fr 1fr;align-items:center;gap:8px;padding:6px 14px;border-bottom:1px solid var(--line)}
+  .mhead{padding:11px 14px;color:var(--mut);font-size:11.5px;font-weight:500}
+  .mhead span:first-child{grid-column:1/2}
+  .mhead .h{text-align:right;padding-right:24px}
+  .mcell{display:flex;align-items:baseline;justify-content:flex-end;gap:4px;padding:12px 6px 12px 0;min-height:52px;
+    border:none;background:transparent;cursor:pointer;font-family:var(--mono);border-radius:8px;-webkit-tap-highlight-color:transparent;width:100%}
+  .mcell:active{background:var(--surf2)}
+  .mcell.bad{background:var(--err-bg)}
+  .mcell .val{font-size:18px;font-weight:500;color:var(--ink)} .mcell .val.ph{color:var(--dim);font-weight:400}
+  .mcell .u{font-size:11px;color:var(--dim);width:18px;text-align:left}
+  .mtot{display:flex;justify-content:space-between;align-items:center;padding:12px 15px;background:var(--surf2)}
+  .mtot .l{font-size:13px;color:var(--mut)} .mtot .v{font-family:var(--mono);font-size:16px;font-weight:600}
+  .optlist{display:flex;flex-direction:column;gap:8px}
+  .opt{display:flex;align-items:center;justify-content:space-between;gap:10px;width:100%;text-align:left;
+    border:1px solid var(--line);background:#fff;border-radius:12px;padding:14px 16px;font-size:15px;font-weight:500;
+    color:var(--ink);cursor:pointer;min-height:52px;font-family:var(--sans);-webkit-tap-highlight-color:transparent}
+  .opt:active{background:var(--surf2)}
+  .opt.on{background:var(--acc-bg);border-color:transparent;color:var(--acc-d);font-weight:600}
+  .opt.on::after{content:"";width:15px;height:9px;border-left:2px solid var(--acc-d);border-bottom:2px solid var(--acc-d);transform:rotate(-45deg);flex:none;margin-bottom:3px}
+
+  /* chips */
+  .pstack{display:flex;flex-direction:column;gap:17px}
+  .subgroup{display:flex;flex-direction:column;gap:11px}
+  .subgroup .slabel{font-size:12.5px;color:var(--mut);font-weight:500}
+  .chips{display:flex;flex-wrap:wrap;gap:9px}
+  .chip{border:1px solid var(--line);background:#fff;border-radius:22px;padding:10px 16px;font-size:13.5px;
+    color:var(--mut);cursor:pointer;user-select:none;min-height:42px;display:flex;align-items:center;gap:6px;font-weight:500}
+  .chip.on{background:var(--acc-bg);border-color:transparent;color:var(--acc-d)}
+  .chip.on::before{content:"";width:14px;height:8px;border-left:2px solid var(--acc-d);border-bottom:2px solid var(--acc-d);
+    transform:rotate(-45deg) translateY(-2px);margin-right:1px}
+
+  /* consent */
+  .consent{display:flex;gap:12px;align-items:flex-start}
+  .consent input{width:24px;height:24px;min-height:24px;margin-top:1px;flex:none;accent-color:var(--acc);border-radius:6px}
+  .consent .t{font-size:13px;color:var(--ink);line-height:1.55}
+  .consent .t a{color:var(--acc-d);font-weight:500;display:inline-block;margin-top:6px}
+  .lgpd-note{font-size:11.5px;color:var(--dim);line-height:1.6;margin-top:12px}
+
+  /* buttons */
+  .btn{border:none;border-radius:var(--rf);padding:15px 18px;font-size:15px;font-weight:600;cursor:pointer;
+    font-family:var(--sans);min-height:54px;display:flex;align-items:center;justify-content:center;gap:9px}
+  .btn.pri{background:var(--acc);color:#fff} .btn.pri:active{background:var(--acc-d)}
+  .btn.sec{background:#fff;border:1px solid var(--line);color:var(--ink)}
+  .btn.ghost{background:none;border:none;color:var(--mut);font-weight:500;min-height:44px}
+  .btn svg{width:19px;height:19px}
+
+  /* save bar (atend only) */
+  .savebar{position:fixed;left:0;right:0;bottom:calc(64px + env(safe-area-inset-bottom));z-index:7;
+    background:var(--surf);border-top:1px solid var(--line);padding:11px 15px}
+  .savebar .w{max-width:720px;margin:0 auto;display:flex;gap:11px}
+  .savebar .btn{flex:1}
+
+  /* bottom nav */
+  .nav{position:fixed;left:0;right:0;bottom:0;z-index:8;background:var(--surf);border-top:1px solid var(--line);
+    padding-bottom:env(safe-area-inset-bottom);display:flex}
+  .nav button{flex:1;background:none;border:none;padding:9px 4px 8px;display:flex;flex-direction:column;
+    align-items:center;gap:3px;color:var(--mut);cursor:pointer;font-family:var(--sans);font-size:11px;font-weight:500;min-height:60px}
+  .nav button svg{width:23px;height:23px}
+  .nav button.on{color:var(--acc)}
+
+  /* ordens */
+  .search{margin-bottom:13px}
+  .ordens{display:flex;flex-direction:column;gap:11px}
+  .ord{background:var(--surf);border:1px solid var(--line);border-radius:var(--r);padding:15px;box-shadow:0 1px 2px rgba(20,30,25,.03)}
+  .ord .id{font-family:var(--mono);font-size:12px;color:var(--acc-d)} .ord .id .loc{color:var(--dim)}
+  .ord .nm{font-size:16.5px;font-weight:600;margin:4px 0 0}
+  .ord .meta{font-size:12.5px;color:var(--mut);margin:2px 0 0}
+  .ord .ctrl{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-top:13px}
+  select.status{font-family:var(--mono);font-size:11px;font-weight:600;padding:9px 10px;width:auto;min-height:40px;
+    text-transform:uppercase;flex:1;min-width:132px;border:1px solid var(--line);border-radius:10px;background:var(--surf2);appearance:none}
+  .status[data-s="enviado"]{color:var(--blue)} .status[data-s="confeccao"]{color:var(--amber)}
+  .status[data-s="pronto"]{color:var(--acc)} .status[data-s="entregue"]{color:var(--gray)}
+  .icobtn{background:var(--surf2);border:1px solid var(--line);border-radius:10px;padding:9px 14px;font-size:13px;
+    color:var(--mut);cursor:pointer;font-weight:500;min-height:40px}
+  .icobtn:active{border-color:var(--acc);color:var(--acc-d)} .icobtn.del{color:var(--err)}
+  .empty{border:1px dashed var(--line);border-radius:var(--r);padding:36px 18px;text-align:center;color:var(--mut);font-size:14px}
+
+  /* transpose */
+  .tout{font-family:var(--mono);font-size:15px;background:var(--acc-tint);border:1px solid #cfe4df;border-radius:var(--rf);
+    padding:15px;color:var(--acc-d);margin-top:15px;display:none;line-height:1.8}
+  .tout.show{display:block} .tout b{color:var(--ink)}
+
+  /* toast */
+  #toast{position:fixed;left:50%;bottom:calc(148px + env(safe-area-inset-bottom));transform:translateX(-50%) translateY(14px);
+    background:var(--ink);color:#fff;padding:12px 22px;border-radius:26px;font-size:13.5px;font-weight:500;opacity:0;
+    pointer-events:none;transition:.28s;z-index:30;max-width:86%;text-align:center}
+  #toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+
+  /* print — via única, retrato compacto, rótulos sólidos */
+  #printDoc{color:#000;font-family:var(--sans);-webkit-print-color-adjust:exact;print-color-adjust:exact}
+  #printDoc *{-webkit-print-color-adjust:exact;print-color-adjust:exact}
+  .doc{width:100%;padding:0}
+  .doc .head{display:flex;justify-content:space-between;align-items:flex-start}
+  .doc .brand{display:flex;gap:10px;align-items:center}
+  .doc .seal{width:38px;height:38px;flex:none}
+  .doc .names{display:flex;align-items:baseline;gap:9px;flex-wrap:wrap}
+  .doc .wm{font-size:18px;font-weight:800;letter-spacing:.12em}
+  .doc .dash{font-size:15px;margin:0 1px}
+  .doc .oticnome{font-size:18px;font-weight:700;text-transform:uppercase;letter-spacing:.03em}
+  .doc .tag{font-size:7.5px;letter-spacing:.2em;text-transform:uppercase;color:#222;margin-top:2px}
+  .doc .doctype{text-align:right;line-height:1.1}
+  .doc .dt{font-size:10px;letter-spacing:.18em;text-transform:uppercase;color:#222}
+  .doc .num{font-family:var(--mono);font-size:21px;font-weight:700}
+  .doc .rsub{font-family:var(--mono);font-size:10px;color:#222}
+  .doc .rulepair{border-top:2.5px solid #000;border-bottom:1px solid #000;height:2px;margin-top:8px}
+  .doc .idline{font-size:11px;color:#222;margin-top:5px}
+  .doc .lbl{font-size:9px;letter-spacing:.14em;text-transform:uppercase;color:#000;font-weight:700}
+  .doc .sec{margin-top:10px}
+  .doc .headrow{display:flex;justify-content:space-between;align-items:flex-start;margin-top:9px}
+  .doc .cliente{font-size:15px;font-weight:700;margin-top:2px}
+  .doc .codebox{flex:none;width:2.2cm;height:2.2cm;border:1px solid #999;border-radius:3px;display:flex;
+    align-items:center;justify-content:center;text-align:center;font-size:7px;letter-spacing:.08em;text-transform:uppercase;color:#999;padding:5px}
+  .doc .rxp{width:100%;border-collapse:collapse;margin-top:4px}
+  .doc .rxp th,.doc .rxp td{border:1.5px solid #000;text-align:center;padding:6px 6px}
+  .doc .rxp thead th{font-size:9px;letter-spacing:.06em;text-transform:uppercase;font-weight:700}
+  .doc .rxp tbody th{width:1.5cm;font-family:var(--mono);font-weight:700;font-size:13px}
+  .doc .rxp tbody td{font-family:var(--mono);font-size:16px;font-weight:800}
+  .doc .med{font-size:12px;margin-top:3px}
+  .doc .med .mk{font-weight:700;text-transform:uppercase;font-size:9px;letter-spacing:.1em;margin-right:5px}
+  .doc .med .mv{font-family:var(--mono);font-size:13px;font-weight:600}
+  .doc .med .sep{display:inline-block;width:16px}
+  .doc .prod{font-size:12px;line-height:1.55;margin-top:3px}
+  .doc .prod .k{font-weight:700;text-transform:uppercase;font-size:11px;letter-spacing:.04em}
+  .doc .lab{border:1px solid #000;margin-top:11px}
+  .doc .labh{font-size:8.5px;letter-spacing:.14em;text-transform:uppercase;background:#000;color:#fff;padding:3px 8px;font-weight:700}
+  .doc .labg{display:grid;grid-template-columns:1fr 1fr}
+  .doc .lcell{padding:6px 9px 4px;border-top:1px solid #000}
+  .doc .lcell:nth-child(odd){border-right:1px solid #000}
+  .doc .ck{font-size:8px;letter-spacing:.08em;text-transform:uppercase;color:#000;font-weight:700}
+  .doc .cline{border-bottom:1px solid #999;height:13px;margin-top:5px}
+  .doc .foot{display:flex;justify-content:space-between;align-items:flex-end;margin-top:12px}
+  .doc .consent{font-size:9px;color:#222;max-width:9.5cm;line-height:1.45}
+  .doc .sign{text-align:center;width:6cm}
+  .doc .sign .sl{border-top:1px solid #000;padding-top:3px;font-size:8.5px;letter-spacing:.05em;text-transform:uppercase;color:#000;font-weight:600;margin-top:30px}
+  .doc .genby{text-align:center;font-size:7.5px;letter-spacing:.18em;text-transform:uppercase;color:#999;margin-top:10px}
+  .doc .valor{border:2px solid #000;display:flex;justify-content:space-between;align-items:center;padding:9px 14px;margin-top:11px}
+  .doc .valor .vk{font-size:10px;letter-spacing:.14em;text-transform:uppercase;font-weight:700}
+  .doc .valor .vv{font-family:var(--mono);font-size:22px;font-weight:700}
+  @media print{ .app,.savebar,.nav,#toast,#login{display:none!important} #printDoc{display:block}
+    body.printrot{width:210mm;height:297mm;overflow:hidden;margin:0}
+    body.printrot #printDoc{position:absolute;left:-51mm;top:43.5mm;width:297mm;height:210mm;padding:6mm;
+      transform:rotate(90deg);transform-origin:center center}
+  }
+  /* OS = meia folha paisagem (A5), com linha de dobra/corte à direita */
+  .doc.os{width:14.3cm;min-height:19cm;border-right:1px dashed #999;padding-right:.5cm;position:relative;display:flex;flex-direction:column}
+  .doc.os .foot{margin-top:auto;padding-top:10px}
+  .doc.os .head{flex-wrap:nowrap;gap:12px;align-items:flex-start}
+  .doc.os .brand{align-items:flex-start;flex:1 1 auto;min-width:0}
+  .doc.os .names{flex-wrap:wrap;align-items:baseline;column-gap:8px;row-gap:0}
+  .doc.os .doctype{flex:0 0 auto;white-space:nowrap}
+  .doc.os .wm{font-size:17px;letter-spacing:.06em}
+  .doc.os .dash{font-size:14px}
+  .doc.os .oticnome{font-size:17px}
+  .doc.os .seal{width:38px;height:38px}
+  .doc.os .tag{font-size:7.5px}
+  .doc.os .dt{font-size:9px}
+  .doc.os .num{font-size:28px}
+  .doc.os .rsub{font-size:8.5px}
+  .doc.os .idline{font-size:9.5px}
+  .doc.os .cliente{font-size:13px}
+  .doc.os .codebox{width:1.15cm;height:1.15cm;font-size:5px;border:1px dashed #ccc;color:#c4c4c4;letter-spacing:.04em}
+  .doc.os .clibox{display:flex;border:1.5px solid #000;margin-top:8px}
+  .doc.os .clibox .clicell{flex:1;padding:5px 10px 6px}
+  .doc.os .clibox .codecell{width:2cm;border-left:1.5px solid #000;display:flex;align-items:center;justify-content:center;
+    text-align:center;font-size:6px;letter-spacing:.1em;text-transform:uppercase;color:#bbb;line-height:1.6}
+  .doc.os .obsbox .lbl,.doc.os .tratline .lbl{display:block;margin-bottom:3px}
+  .doc.os .headrow{margin-top:7px;align-items:center}
+  .doc.os .obsbox{border:1.5px solid #000;margin-top:8px;padding:4px 8px 5px}
+  .doc.os .obstext{font-size:10px;margin-top:2px;min-height:.6cm;white-space:pre-wrap}
+  .doc.os .rxp thead th{font-size:8px}
+  .doc.os .rxp tbody th{font-size:11px;width:1.2cm}
+  .doc.os .rxp tbody td{font-size:14px;font-weight:800}
+  .doc.os .rxp th,.doc.os .rxp td{padding:4px 4px}
+  /* centragem + lente/armação lado a lado */
+  .doc.os .grid2{display:flex;gap:8px;margin-top:9px;align-items:stretch}
+  .doc.os .grid2>*{flex:1}
+  .doc.os .grid2>.ctab{flex:1.25}
+  .doc.os .ctab,.doc.os .ptab{width:100%;border-collapse:collapse;height:100%}
+  .doc.os .ctab th,.doc.os .ctab td,.doc.os .ptab th,.doc.os .ptab td{border:1.5px solid #000}
+  .doc.os .ctab thead th{font-size:9px;font-weight:800;text-transform:uppercase;letter-spacing:.03em;padding:3px 3px}
+  .doc.os .ctab tbody th{font-family:var(--mono);font-weight:700;font-size:11px;text-align:center;width:.85cm;padding:4px 2px}
+  .doc.os .ctab tbody td{font-family:var(--mono);font-weight:800;font-size:14px;text-align:center;padding:4px 2px}
+  .doc.os .ctab .dptot{font-size:16px;vertical-align:middle}
+  .doc.os .statuspill{display:inline-block;background:#000;color:#fff;font-size:8px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;padding:3px 9px;border-radius:3px;margin-top:5px}
+  .doc.os .signs{display:flex;gap:12px}
+  .doc.os .signs .sign{width:3.9cm}
+  .doc.os .ptab th{text-align:left;font-size:8.5px;text-transform:uppercase;letter-spacing:.05em;width:1.9cm;font-weight:700;padding:4px 6px}
+  .doc.os .ptab td{font-size:11px;font-weight:600;padding:4px 6px}
+  /* tratamentos */
+  .doc.os .tratline{margin-top:8px}
+  .doc.os .trats{display:flex;flex-wrap:wrap;gap:6px;margin-top:4px}
+  .doc.os .trt{display:inline-flex;align-items:center;gap:4px;border:1.5px solid #000;padding:2px 7px 2px 4px;font-size:10px;font-weight:700}
+  .doc.os .trt .box{display:inline-flex;align-items:center;justify-content:center;width:12px;height:12px;border:1.5px solid #000;font-size:10px;line-height:1;font-weight:900}
+  /* uso do laboratório — faixa compacta de 3 campos */
+  .doc.os .lab3{border:1.5px solid #000;margin-top:8px}
+  .doc.os .lab3 .labh{font-size:7.5px;letter-spacing:.12em;text-transform:uppercase;background:#000;color:#fff;padding:3px 7px;font-weight:700}
+  .doc.os .lab3row{display:grid;grid-template-columns:1fr 1fr 1fr}
+  .doc.os .lab3 .lc{padding:5px 8px 4px;border-left:1px solid #000}
+  .doc.os .lab3 .lc:first-child{border-left:none}
+  .doc.os .lab3 .ck{font-size:7.5px;letter-spacing:.06em;text-transform:uppercase;color:#000;font-weight:700}
+  .doc.os .lab3 .cline{border-bottom:1px solid #999;height:12px;margin-top:5px}
+  .doc.os .lbl{font-size:8px}
+  .doc.os .consent{font-size:8px;max-width:7cm}
+  .doc.os .sign{width:5cm}
+  .doc.os .sign .sl{font-size:7.5px;margin-top:20px}
+  .doc.os .genby{font-size:6.5px}
+  /* verso (metade direita) — reserva do QR de divulgação */
+  .ostwo{display:flex;align-items:stretch}
+  .osverso{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding-left:1cm}
+  .osverso .versobox{border:1px dashed #ccc;border-radius:8px;width:6cm;height:6cm;display:flex;align-items:center;
+    justify-content:center;text-align:center;color:#bbb;font-size:9px;letter-spacing:.14em;text-transform:uppercase;line-height:2.1}
+  .osverso .versobrand{margin-top:14px;color:#bbb;font-size:9px;letter-spacing:.14em;text-transform:uppercase}
+  /* login */
+  .login{position:fixed;left:0;right:0;top:0;height:100vh;height:100dvh;z-index:60;display:flex;align-items:center;justify-content:center;background:var(--bg);padding:24px}
+  .login[hidden]{display:none}
+  .loginbox{max-width:340px;width:100%;text-align:center;display:flex;flex-direction:column;align-items:center;gap:4px}
+  .loginbox .mk{width:64px;height:64px;border-radius:50%;background:var(--acc-bg);display:flex;align-items:center;justify-content:center;color:var(--acc-d);margin-bottom:10px}
+  .loginbox h1{font-size:28px;font-weight:600;letter-spacing:-.02em;margin:0}
+  .loginbox p{color:var(--mut);font-size:14px;margin:0 0 22px}
+  .loginbox .btn{width:100%}
+  .loginbox .fine{font-size:11.5px;color:var(--dim);margin-top:14px;line-height:1.5}
+</style>
+<style id="pagestyle"></style>
+</head>
+<body>
+<div class="app" id="app">
+  <div class="head">
+    <div class="top">
+      <div class="logo">
+        <span class="mk"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><circle cx="12" cy="12" r="8"/><circle cx="12" cy="12" r="2.4" fill="currentColor" stroke="none"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3"/></svg></span>
+        <b>Órbita</b>
+      </div>
+      <div class="who">
+        <div class="id"><b id="whoName">—</b><span id="whoRole">Óptica · MEI</span></div>
+        <div class="av" id="whoAv">—</div>
+      </div>
+    </div>
+  </div>
+  <div id="view"></div>
+</div>
+
+<nav class="nav" id="nav">
+  <button data-t="atend" class="on"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><rect x="5" y="3" width="14" height="18" rx="2.5"/><path d="M9 3.5V6h6V3.5M12 11v5M9.5 13.5h5"/></svg>Atender</button>
+  <button data-t="ordens"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M8 6h12M8 12h12M8 18h12M4 6h.01M4 12h.01M4 18h.01"/></svg>Ordens</button>
+  <button data-t="ferr"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M17 4l3 3-3 3M20 7H8M7 20l-3-3 3-3M4 17h12"/></svg>Transpor</button>
+  <button data-t="cfg"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M5 8h14M5 16h14"/><circle cx="9" cy="8" r="2.3" fill="var(--surf)"/><circle cx="15" cy="16" r="2.3" fill="var(--surf)"/></svg>Ajustes</button>
+</nav>
+
+<div id="printDoc"></div>
+<div id="rxModal" class="modal" hidden></div>
+<div id="toast"></div>
+
+<div id="login" class="login" hidden>
+  <div class="loginbox">
+    <span class="mk"><svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><circle cx="12" cy="12" r="8"/><circle cx="12" cy="12" r="2.4" fill="currentColor" stroke="none"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3"/></svg></span>
+    <h1>Órbita</h1>
+    <p>Atendimento óptico domiciliar</p>
+    <button id="loginBtn" class="btn pri">Entrar com Google</button>
+    <span class="fine">Seus dados ficam na sua conta, privados. Só você acessa.</span>
+  </div>
+</div>
+
+<script src="https://www.gstatic.com/firebasejs/11.0.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/11.0.2/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/11.0.2/firebase-firestore-compat.js"></script>
+
+<script>
+// === Firebase (projeto Órbita) — COLE SUA CONFIG DO CONSOLE ===
+const firebaseConfig = {
+  apiKey: "AIzaSyDHLVFj1Wsi4IOGxBEAM9ILi8Mm7DJ93V4",
+  authDomain: "orbita-b2b55.firebaseapp.com",
+  projectId: "orbita-b2b55",
+  storageBucket: "orbita-b2b55.firebasestorage.app",
+  messagingSenderId: "1034407399424",
+  appId: "1:1034407399424:web:5ec1ee55fd9bb0f8efc8e5"
+};
+firebase.initializeApp(firebaseConfig);
+const db = firebase.firestore();
+const auth = firebase.auth();
+db.enablePersistence({synchronizeTabs:true}).catch(()=>{}); // offline nas visitas
+let user = null;
+
+const TIPOS=["visão simples","multifocal","bifocal"];
+const INDICES=["resina 1.50","resina 1.56","policarbonato","trivex","resina 1.61","resina 1.67","resina 1.74","cristal"];
+const TRATAM=["AR","fotossensível","blue light","hidrofóbico","UV"];
+const STATUS=[["enviado","enviado ao lab"],["confeccao","em confecção"],["pronto","pronto"],["entregue","entregue"]];
+const IC={save:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M5 4h11l3 3v13H5z"/><path d="M8 4v5h7M8 20v-6h8v6"/></svg>',
+  print:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M6 9V4h12v5M6 18H4v-6a2 2 0 012-2h12a2 2 0 012 2v6h-2M8 14h8v6H8z"/></svg>'};
+let S=null, editingId=null, current="atend", form=null;
+
+/* --- camada de dados: único ponto que conhece o Firestore --- */
+function defaults(){return{config:{nome:"",cnpj:"",contato:""},clientes:[],ordens:[],counters:{local:1}};}
+function docBase(){return db.collection("consultores").doc(user.uid);}
+async function repoLoadAll(){
+  const base=docBase(), cfg=await base.get();
+  if(cfg.exists){const d=cfg.data();S={config:d.config||{},counters:d.counters||{local:1},clientes:[],ordens:[]};}
+  else{S=defaults();S.config.nome=user.displayName||"";await base.set({config:S.config,counters:S.counters});}
+  S.config=Object.assign({nome:"",cnpj:"",contato:""},S.config);S.counters=Object.assign({local:1},S.counters);
+  const cs=await base.collection("clientes").get();S.clientes=cs.docs.map(x=>x.data());
+  const os=await base.collection("ordens").get();S.ordens=os.docs.map(x=>x.data());
+}
+function saveConsultor(){return docBase().set({config:S.config,counters:S.counters},{merge:true}).catch(e=>console.error("consultor",e));}
+function saveCliente(c){return docBase().collection("clientes").doc(c.id).set(c).catch(e=>console.error("cliente",e));}
+function saveOrdemDoc(o){return docBase().collection("ordens").doc(o.id).set(o).catch(e=>console.error("ordem",e));}
+function deleteOrdemDoc(id){return docBase().collection("ordens").doc(id).delete().catch(e=>console.error("del",e));}
+
+function uid(){return Math.random().toString(36).slice(2,9);}
+function toast(m){const t=document.getElementById("toast");t.textContent=m;t.classList.add("show");setTimeout(()=>t.classList.remove("show"),2000);}
+function esc(s){return String(s==null?"":s).replace(/[&<>"]/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[m]));}
+function fmtG(n){return "OS-"+String(n).padStart(6,"0");}
+function today(){return new Date().toISOString().slice(0,10);}
+function brDate(iso){if(!iso)return"";const[y,m,d]=iso.split("-");return d+"/"+m+"/"+y;}
+function brShort(iso){const M=["jan","fev","mar","abr","mai","jun","jul","ago","set","out","nov","dez"];const[y,m,d]=iso.split("-");return d+" "+M[+m-1];}
+function initials(n){n=(n||"").trim();if(!n)return"—";const p=n.split(/\s+/);return((p[0][0]||"")+(p.length>1?p[p.length-1][0]:"")).toUpperCase();}
+
+function nav(t){current=t;document.querySelectorAll("#nav button").forEach(b=>b.classList.toggle("on",b.dataset.t===t));
+  document.body.classList.toggle("atend",t==="atend");draw();window.scrollTo(0,0);}
+
+/* receita */
+const RX_FIELDS=["esf","cil","eixo","ad"];
+function blankRx(){return{od:{esf:"",cil:"",eixo:"",ad:""},oe:{esf:"",cil:"",eixo:"",ad:""}};}
+function toMQ(v){if(v===""||v==null)return{sign:"+",mag:"",q:0};
+  const sign=v[0]==="-"?"-":"+";let num=Math.abs(parseFloat(v));if(isNaN(num))return{sign:"+",mag:"",q:0};
+  let mi=Math.floor(num),q=Math.round((num-mi)*100);q=[0,25,50,75,100].reduce((a,b)=>Math.abs(b-q)<Math.abs(a-q)?b:a,0);if(q===100){mi++;q=0;}
+  return{sign,mag:String(mi),q};}
+function mqEmpty(o){return o.mag===""&&o.q===0;}
+function mqNum(o){return parseInt(o.mag||"0")+o.q/100;}
+function mqVal(o,signed){if(mqEmpty(o))return"";const n=mqNum(o);return signed?((o.sign==="-"?"-":"+")+n.toFixed(2)):n.toFixed(2);}
+function mqDisp(o,signed){if(mqEmpty(o))return"\u2014";const n=mqNum(o);if(signed)return n===0?"0.00":(o.sign==="-"?"\u2212":"+")+n.toFixed(2);return "+"+n.toFixed(2);}
+const RX_LABEL={esf:"Esférico",cil:"Cilíndrico",eixo:"Eixo",ad:"Adição"};
+const RX_SHORT={esf:"Esf.",cil:"Cil.",eixo:"Eixo",ad:"Adição"};
+function formatDisp(f,v){if(v===""||v==null)return '<span class="ph">—</span>';
+  if(f==="esf"||f==="cil"){if(v[0]==="-")return "\u2212"+esc(v.slice(1));if(v[0]==="+")return "+"+esc(v.slice(1));return "+"+esc(v);}
+  if(f==="eixo")return esc(v)+"\u00b0";
+  if(f==="ad"){const m=v[0]==="+"?v.slice(1):v;return "+"+esc(m);}
+  return esc(v);}
+function rxRowsHTML(){return ["od","oe"].map(eye=>`<div class="rxr rxrow"><span class="badge">${eye.toUpperCase()}</span>${RX_FIELDS.map(f=>`<button type="button" class="rxcell" data-eye="${eye}" data-f="${f}">${formatDisp(f,form.rx[eye][f])}</button>`).join("")}</div>`).join("");}
+function wireRxCells(){document.querySelectorAll("#rxRows .rxcell").forEach(c=>c.onclick=()=>openRxModal(c.dataset.eye,c.dataset.f));}
+function refreshRxRows(){const el=document.getElementById("rxRows");if(el){el.innerHTML=rxRowsHTML();wireRxCells();}liveRxValidate();}
+
+/* receita modal */
+let rxModal=null;
+function openRxModal(eye,field){const g=form.rx[eye],ad=toMQ(g.ad);
+  rxModal={eye,field,buf:{esf:toMQ(g.esf),cil:toMQ(g.cil),eixo:(g.eixo||""),ad:{mag:ad.mag,q:ad.q}}};
+  document.getElementById("rxModal").hidden=false;document.body.style.overflow="hidden";renderRxModal();}
+function closeRxModal(commit){const m=document.getElementById("rxModal");
+  if(commit&&rxModal){const b=rxModal.buf,eye=rxModal.eye;
+    form.rx[eye].esf=mqVal(b.esf,true);form.rx[eye].cil=mqVal(b.cil,true);
+    form.rx[eye].eixo=b.eixo;form.rx[eye].ad=mqVal(b.ad,false);refreshRxRows();}
+  rxModal=null;m.hidden=true;document.body.style.overflow="";}
+function rxBuf(){const f=rxModal.field;return (f==="esf"||f==="cil")?rxModal.buf[f]:(f==="ad"?rxModal.buf.ad:null);}
+function fmtBig(f){const b=rxModal.buf;
+  if(f==="eixo")return b.eixo===""?"\u2014":b.eixo+"\u00b0";
+  return mqDisp(f==="ad"?b.ad:b[f],f!=="ad");}
+function fmtBigFor(ff){return fmtBig(ff);}
+function rxKey(k){const f=rxModal.field,b=rxModal.buf;
+  if(f==="eixo"){if(k==="back")b.eixo=b.eixo.slice(0,-1);
+    else if(k==="clear")b.eixo="";
+    else if(/[0-9]/.test(k)){let n=(b.eixo==="0"?"":b.eixo)+k;if(n.length<=3&&parseInt(n)<=180)b.eixo=n;}renderRxModal();return;}
+  const t=rxBuf();
+  if(k==="back"){if(t.mag!=="")t.mag=t.mag.slice(0,-1);else t.q=0;}
+  else if(k==="clear"){t.mag="";t.q=0;}
+  else if(k==="sign"){if(f==="esf"||f==="cil")t.sign=t.sign==="-"?"+":"-";}
+  else if(/[0-9]/.test(k)){const m=t.mag==="0"?"":t.mag;if(m.length<2)t.mag=m+k;}
+  renderRxModal();}
+function rxStep(dir){const f=rxModal.field,b=rxModal.buf;
+  if(f==="eixo"){let n=(parseInt(b.eixo||"0")||0)+dir*5;n=Math.max(0,Math.min(180,n));b.eixo=String(n);renderRxModal();return;}
+  const t=rxBuf();let total=parseInt(t.mag||"0")*100+t.q+dir*25;if(total<0)total=0;
+  const mi=Math.floor(total/100);t.q=total-mi*100;t.mag=String(mi);renderRxModal();}
+function rxGoto(f){rxModal.field=f;renderRxModal();}
+function rxNav(dir){const i=RX_FIELDS.indexOf(rxModal.field)+dir;if(i>=0&&i<RX_FIELDS.length){rxModal.field=RX_FIELDS[i];renderRxModal();}}
+function rxWarn(){const f=rxModal.field,b=rxModal.buf;
+  if((f==="esf"||f==="cil")&&mqNum(b[f])>30)return "Fora da faixa — máximo 30 dioptrias";
+  if(f==="ad"&&mqNum(b.ad)>4)return "Adição costuma ir até +4,00";
+  return "";}
+function renderRxModal(){const f=rxModal.field,eye=rxModal.eye,idx=RX_FIELDS.indexOf(f);
+  const tabs=RX_FIELDS.map(ff=>{const val=fmtBigFor(ff);return `<button class="mtab ${ff===f?"on":""}" onclick="rxGoto('${ff}')"><span class="l">${RX_SHORT[ff]}</span><span class="v ${val==="\u2014"?"ph":""}">${val}</span></button>`;}).join("");
+  const isSigned=f==="esf"||f==="cil",isAxis=f==="eixo";
+  let steps;
+  if(isSigned)steps=`<div class="steps"><button onclick="rxStep(-1)">\u2212 0,25</button><button class="sgn" onclick="rxKey('sign')">\u00b1 sinal</button><button onclick="rxStep(1)">+ 0,25</button></div>`;
+  else if(isAxis)steps=`<div class="steps"><button onclick="rxStep(-1)">\u2212 5\u00b0</button><button onclick="rxStep(1)">+ 5\u00b0</button></div>`;
+  else steps=`<div class="steps"><button onclick="rxStep(-1)">\u2212 0,25</button><button onclick="rxStep(1)">+ 0,25</button></div>`;
+  const digits=[1,2,3,4,5,6,7,8,9].map(n=>`<button onclick="rxKey('${n}')">${n}</button>`).join("");
+  const pad=`<div class="pad">${digits}<button class="sm clr" onclick="rxKey('clear')">limpar</button><button onclick="rxKey('0')">0</button><button class="sm" onclick="rxKey('back')">\u232B</button></div>`;
+  const nav=`<div class="mnav"><button onclick="rxNav(-1)" ${idx===0?"disabled":""}>\u2039 Anterior</button><button onclick="rxNav(1)" ${idx===RX_FIELDS.length-1?"disabled":""}>Próximo \u203a</button></div>`;
+  const hint=isAxis?"grau · 0–180":"dioptria · passo 0,25";
+  document.getElementById("rxModal").innerHTML=`
+    <div class="mhd"><h3>Receita — <span>${eye.toUpperCase()}</span></h3><button class="x" onclick="closeRxModal(false)">\u00d7</button></div>
+    <div class="mbody">
+      <div class="mtabs">${tabs}</div>
+      <div class="mbig"><div class="cur">${fmtBig(f)}</div><div class="lab">${RX_LABEL[f]} · ${hint}</div></div>
+      <div class="mwarn">${rxWarn()}</div>
+      ${nav}
+      ${steps}
+      ${pad}
+    </div>
+    <div class="mftr"><div class="in">
+      <button class="btn pri" onclick="closeRxModal(true)">Confirmar ${eye.toUpperCase()}</button>
+    </div></div>`;}
+/* medições — modal-teclado (mm, passo 0,5) */
+const MEAS_FIELDS=["dnpOD","dnpOE","altOD","altOE"];
+const MEAS_LABEL={dnpOD:"DNP · OD",dnpOE:"DNP · OE",altOD:"Altura · OD",altOE:"Altura · OE"};
+const MEAS_SHORT={dnpOD:"DNP OD",dnpOE:"DNP OE",altOD:"Alt OD",altOE:"Alt OE"};
+function toMH(v){if(v===""||v==null)return{mag:"",h:0};let n=parseFloat(v);if(isNaN(n))return{mag:"",h:0};
+  let mi=Math.floor(n),h=Math.round((n-mi)*10);h=h>=8?(mi++,0):(h>=3?5:0);return{mag:String(mi),h};}
+function mhEmpty(o){return o.mag===""&&o.h===0;}
+function mhNum(o){return parseInt(o.mag||"0")+o.h/10;}
+function mhVal(o){return mhEmpty(o)?"":mhNum(o).toFixed(1);}
+function mhDisp(o){return mhEmpty(o)?"\u2014":mhNum(o).toFixed(1).replace(".",",");}
+function measDisp(v){if(v===""||v==null)return '<span class="val ph">\u2014</span>';return '<span class="val">'+esc(String(v).replace(".",","))+'</span>';}
+function mRowsHTML(){return ["OD","OE"].map(E=>{const e=E.toLowerCase();return `<div class="mrow"><span class="badge">${E}</span>`+
+  ["dnp","alt"].map(p=>`<button type="button" class="mcell" data-k="${p}${E}">${measDisp(form.medidas[p+E])}<span class="u">mm</span></button>`).join("")+`</div>`;}).join("");}
+function wireMeasCells(){document.querySelectorAll("#mRows .mcell").forEach(c=>c.onclick=()=>openMeasModal(c.dataset.k));}
+function refreshMeas(){const el=document.getElementById("mRows");if(el){el.innerHTML=mRowsHTML();wireMeasCells();}updateDP();}
+let measModal=null;
+function openMeasModal(field){const g=form.medidas,buf={};MEAS_FIELDS.forEach(k=>buf[k]=toMH(g[k]));
+  measModal={field,buf};document.getElementById("rxModal").hidden=false;document.body.style.overflow="hidden";renderMeasModal();}
+function closeMeasModal(commit){const m=document.getElementById("rxModal");
+  if(commit&&measModal){MEAS_FIELDS.forEach(k=>form.medidas[k]=mhVal(measModal.buf[k]));refreshMeas();}
+  measModal=null;m.hidden=true;document.body.style.overflow="";}
+function measKey(k){const t=measModal.buf[measModal.field];
+  if(k==="back"){if(t.mag!=="")t.mag=t.mag.slice(0,-1);else t.h=0;}
+  else if(k==="clear"){t.mag="";t.h=0;}
+  else if(/[0-9]/.test(k)){const m=t.mag==="0"?"":t.mag;if(m.length<2)t.mag=m+k;}
+  renderMeasModal();}
+function measStep(dir){const t=measModal.buf[measModal.field];let total=parseInt(t.mag||"0")*10+t.h+dir*5;if(total<0)total=0;
+  const mi=Math.floor(total/10);t.h=total-mi*10;t.mag=String(mi);renderMeasModal();}
+function measGoto(f){measModal.field=f;renderMeasModal();}
+function measNav(dir){const i=MEAS_FIELDS.indexOf(measModal.field)+dir;if(i>=0&&i<MEAS_FIELDS.length){measModal.field=MEAS_FIELDS[i];renderMeasModal();}}
+function renderMeasModal(){const f=measModal.field,idx=MEAS_FIELDS.indexOf(f);
+  const tabs=MEAS_FIELDS.map(ff=>{const v=mhDisp(measModal.buf[ff]);return `<button class="mtab ${ff===f?"on":""}" onclick="measGoto('${ff}')"><span class="l">${MEAS_SHORT[ff]}</span><span class="v ${v==="\u2014"?"ph":""}">${v}</span></button>`;}).join("");
+  const steps=`<div class="steps"><button onclick="measStep(-1)">\u2212 0,5</button><button onclick="measStep(1)">+ 0,5</button></div>`;
+  const digits=[1,2,3,4,5,6,7,8,9].map(n=>`<button onclick="measKey('${n}')">${n}</button>`).join("");
+  const pad=`<div class="pad">${digits}<button class="sm clr" onclick="measKey('clear')">limpar</button><button onclick="measKey('0')">0</button><button class="sm" onclick="measKey('back')">\u232B</button></div>`;
+  const nav=`<div class="mnav"><button onclick="measNav(-1)" ${idx===0?"disabled":""}>\u2039 Anterior</button><button onclick="measNav(1)" ${idx===MEAS_FIELDS.length-1?"disabled":""}>Próximo \u203a</button></div>`;
+  document.getElementById("rxModal").innerHTML=`
+    <div class="mhd"><h3>Medição — <span>${MEAS_SHORT[f]}</span></h3><button class="x" onclick="closeMeasModal(false)">\u00d7</button></div>
+    <div class="mbody">
+      <div class="mtabs">${tabs}</div>
+      <div class="mbig"><div class="cur">${mhDisp(measModal.buf[f])}<span style="font-size:20px;color:var(--mut)"> mm</span></div><div class="lab">${MEAS_LABEL[f]} · milímetro · passo 0,5</div></div>
+      <div class="mwarn"></div>
+      ${nav}
+      ${steps}
+      ${pad}
+    </div>
+    <div class="mftr"><div class="in">
+      <button class="btn pri" onclick="closeMeasModal(true)">Confirmar medição</button>
+    </div></div>`;}
+
+function validRx(rx){const errs={};for(const eye of["od","oe"]){const e=rx[eye];
+  for(const f of["esf","cil","ad"]){
+    if(e[f]!==""&&isNaN(parseFloat(e[f])))errs[eye+f]="número";
+    else if(f!=="ad"&&e[f]!==""&&Math.abs(parseFloat(e[f]))>30)errs[eye+f]="faixa";
+    else if(f==="ad"&&e[f]!==""&&(parseFloat(e[f])<0||parseFloat(e[f])>4))errs[eye+f]="0–4";}
+  if(e.eixo!==""){const x=parseInt(e.eixo);if(isNaN(x)||x<0||x>180)errs[eye+"eixo"]="0–180";}
+  if(e.cil!==""&&parseFloat(e.cil)!==0&&e.eixo==="")errs[eye+"eixo"]="eixo";}
+  return errs;}
+
+/* atendimento */
+function newForm(){return{clienteId:null,nome:"",contato:"",endereco:"",rx:blankRx(),
+  medidas:{dnpOD:"",dnpOE:"",altOD:"",altOE:""},
+  produto:{armacao:"",tipo:"",indice:"",tratam:[],obs:""},valor:"",status:"enviado",consent:false};}
+function loadOrdemToForm(o){const c=S.clientes.find(x=>x.id===o.clienteId)||{};
+  form={clienteId:o.clienteId,nome:c.nome||"",contato:c.contato||"",endereco:c.endereco||"",
+    rx:JSON.parse(JSON.stringify(o.receita)),medidas:Object.assign({},o.medidas),
+    produto:Object.assign({tratam:[]},o.produto),valor:o.valor||"",status:o.status,consent:true};
+  editingId=o.id;nav("atend");}
+
+const LENS=`<svg class="rxbg" width="260" height="150" viewBox="0 0 260 150" fill="none" stroke="#0f7d6e" stroke-opacity=".14">
+  <g stroke-width="1"><circle cx="130" cy="82" r="66"/><circle cx="130" cy="82" r="42" stroke-dasharray="3 4"/><circle cx="130" cy="82" r="20" stroke-dasharray="3 4"/>
+  <path d="M130 8v148M40 82h180" stroke-dasharray="2 5"/></g>
+  <g stroke-width="1" stroke-opacity=".18">${Array.from({length:25}).map((_,i)=>`<path d="M${20+i*9} 8v${i%5===0?9:5}"/>`).join("")}</g></svg>`;
+
+function drawAtend(){
+  if(!form)form=newForm();
+  const dl=S.clientes.map(c=>`<option value="${esc(c.nome)}">`).join("");
+  const editing=!!editingId;
+  document.getElementById("view").innerHTML=`
+  <div class="ptitle"><h1>${editing?"Editar atendimento":"Novo atendimento"}</h1>
+    <span class="meta">${editing?fmtG(S.ordens.find(o=>o.id===editingId).num):brShort(today())}</span></div>
+
+  <div class="card">
+    <div class="shead"><span class="n">01</span><span class="bar"></span><h2>Cliente</h2></div>
+    <div class="fgrid f2">
+      <label class="field"><span class="flab">Nome</span><input id="f_nome" list="cli_dl" value="${esc(form.nome)}" placeholder="Nome do cliente"></label>
+      <label class="field"><span class="flab">Telefone</span><input id="f_contato" type="tel" value="${esc(form.contato)}" placeholder="Fica só no sistema"></label>
+    </div>
+    <datalist id="cli_dl">${dl}</datalist>
+    <label class="field" style="margin-top:11px"><span class="flab">Endereço da visita</span><input id="f_end" value="${esc(form.endereco)}" placeholder="Não é impresso na OS"></label>
+    <div id="histBox"></div>
+  </div>
+
+  <div class="card">
+    <div class="shead"><span class="n">02</span><span class="bar"></span><h2>Receita</h2></div>
+    <div class="rxcard">${LENS}<div class="rxgrid">
+      <div class="rxr rxhead"><span></span><span>Esfera<i>±</i></span><span>Cilindro<i>±</i></span><span>Eixo<i>°</i></span><span>Adição<i>+</i></span></div>
+      <div id="rxRows">${rxRowsHTML()}</div>
+      <div class="rxfoot"><span>dioptria · eixo em graus</span><span>${brShort(today())}</span></div>
+    </div></div>
+    <p class="fe" id="rxErr"></p>
+  </div>
+
+  <div class="card">
+    <div class="shead"><span class="n">03</span><span class="bar"></span><h2>Medições</h2></div>
+    <div class="mtable">
+      <div class="mrow mhead"><span>Olho</span><span class="h">DNP</span><span class="h">Altura óptica</span></div>
+      <div id="mRows">${mRowsHTML()}</div>
+      <div class="mtot"><span class="l">DP total</span><span class="v" id="dpTotal">—</span></div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="shead"><span class="n">04</span><span class="bar"></span><h2>Produto</h2></div>
+    <div class="pstack">
+      <label class="field"><span class="flab">Armação</span><input id="p_arm" value="${esc(form.produto.armacao)}" placeholder="Marca / modelo"></label>
+      <div class="subgroup">
+        <span class="slabel">Tipo de lente</span>
+        <div class="chips" id="tipoChips">${TIPOS.map(t=>`<span class="chip ${form.produto.tipo===t?"on":""}" data-v="${esc(t)}">${t}</span>`).join("")}</div>
+      </div>
+      <div class="subgroup">
+        <span class="slabel">Material e índice</span>
+        <div class="optlist" id="indList">${INDICES.map(t=>`<button type="button" class="opt ${form.produto.indice===t?"on":""}" data-v="${esc(t)}">${t}</button>`).join("")}</div>
+      </div>
+      <div class="subgroup">
+        <span class="slabel">Tratamentos</span>
+        <div class="chips" id="tratChips">${TRATAM.map(t=>`<span class="chip ${form.produto.tratam.includes(t)?"on":""}" data-t="${t}">${t}</span>`).join("")}</div>
+      </div>
+      <label class="field"><span class="flab">Preço (opcional, p/ recibo)</span><input id="p_valor" value="${esc(form.valor)}" placeholder="R$" inputmode="decimal"></label>
+      <label class="field"><span class="flab">Observações</span><textarea id="p_obs" rows="2">${esc(form.produto.obs)}</textarea></label>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="shead"><span class="n">05</span><span class="bar"></span><h2>Consentimento LGPD</h2></div>
+    <label class="consent"><input type="checkbox" id="consentChk" ${form.consent?"checked":""}>
+      <span class="t">Autorizo a coleta e o tratamento dos meus dados de saúde visual para a confecção da receita e do pedido de serviço, conforme a LGPD (Lei 13.709/2018).<br><a>Ler política de privacidade</a></span></label>
+    <p class="lgpd-note">Você é o Controlador; a ferramenta só processa. Telefone e endereço ficam apenas no sistema e nunca são impressos.</p>
+    ${editing?'<div style="margin-top:12px"><button class="btn ghost" id="cancelEdit">Cancelar edição</button></div>':''}
+  </div>
+
+  <div class="savebar"><div class="w">
+    <button class="btn pri" id="saveBtn">${IC.save}${editing?"Salvar alterações":"Salvar pedido"}</button>
+    <button class="btn sec" id="savePrintBtn">${IC.print}Salvar e imprimir</button>
+  </div></div>`;
+
+  const nameEl=document.getElementById("f_nome");
+  nameEl.addEventListener("input",e=>form.nome=e.target.value);
+  nameEl.addEventListener("change",e=>{const m=S.clientes.find(c=>c.nome.toLowerCase()===e.target.value.trim().toLowerCase());
+    if(m){form.clienteId=m.id;form.contato=m.contato;form.endereco=m.endereco;
+      document.getElementById("f_contato").value=m.contato||"";document.getElementById("f_end").value=m.endereco||"";drawHist(m);}});
+  document.getElementById("f_contato").addEventListener("input",e=>form.contato=e.target.value);
+  document.getElementById("f_end").addEventListener("input",e=>form.endereco=e.target.value);
+  if(form.clienteId){const m=S.clientes.find(c=>c.id===form.clienteId);if(m)drawHist(m);}
+
+  wireRxCells();
+  wireMeasCells();updateDP();
+  document.getElementById("p_arm").addEventListener("input",e=>form.produto.armacao=e.target.value);
+  document.querySelectorAll("#tipoChips .chip").forEach(ch=>ch.addEventListener("click",()=>{
+    const v=ch.dataset.v;form.produto.tipo=(form.produto.tipo===v)?"":v;
+    document.querySelectorAll("#tipoChips .chip").forEach(x=>x.classList.toggle("on",x.dataset.v===form.produto.tipo));}));
+  document.querySelectorAll("#indList .opt").forEach(op=>op.addEventListener("click",()=>{
+    const v=op.dataset.v;form.produto.indice=(form.produto.indice===v)?"":v;
+    document.querySelectorAll("#indList .opt").forEach(x=>x.classList.toggle("on",x.dataset.v===form.produto.indice));}));
+  document.getElementById("p_valor").addEventListener("input",e=>form.valor=e.target.value);
+  document.getElementById("p_obs").addEventListener("input",e=>form.produto.obs=e.target.value);
+  document.querySelectorAll("#tratChips .chip").forEach(ch=>ch.addEventListener("click",()=>{
+    const t=ch.dataset.t,i=form.produto.tratam.indexOf(t);if(i>=0)form.produto.tratam.splice(i,1);else form.produto.tratam.push(t);ch.classList.toggle("on");}));
+  document.getElementById("consentChk").addEventListener("change",e=>form.consent=e.target.checked);
+  document.getElementById("saveBtn").onclick=()=>saveOrdem(false);
+  document.getElementById("savePrintBtn").onclick=()=>saveOrdem(true);
+  if(editing)document.getElementById("cancelEdit").onclick=()=>{editingId=null;form=newForm();nav("atend");};
+}
+
+function updateDP(){const a=parseFloat(form.medidas.dnpOD),b=parseFloat(form.medidas.dnpOE);const el=document.getElementById("dpTotal");if(!el)return;
+  if(!isNaN(a)&&!isNaN(b))el.textContent=String((a+b).toFixed(1)).replace(".",",")+" mm";
+  else if(!isNaN(a)||!isNaN(b))el.textContent=String(((isNaN(a)?0:a)+(isNaN(b)?0:b)).toFixed(1)).replace(".",",")+" mm";
+  else el.textContent="—";}
+
+function drawHist(cli){const box=document.getElementById("histBox");if(!box)return;
+  const prev=S.ordens.filter(o=>o.clienteId===cli.id).sort((a,b)=>b.data.localeCompare(a.data));
+  if(!prev.length){box.innerHTML="";return;}
+  const last=prev[0],r=last.receita;
+  box.innerHTML=`<div style="margin-top:13px;background:var(--acc-tint);border:1px solid #cfe4df;border-radius:14px;padding:12px 14px">
+    <b style="color:var(--acc-d);font-size:12.5px">Histórico — última OS ${brDate(last.data)}</b>
+    <div style="font-family:var(--mono);margin-top:6px;color:var(--mut);font-size:12.5px">OD ${rxLine(r.od)} · OE ${rxLine(r.oe)}</div>
+    <button class="icobtn" id="copyRx" style="margin-top:11px;background:#fff">Copiar receita anterior</button></div>`;
+  document.getElementById("copyRx").onclick=()=>{form.rx=JSON.parse(JSON.stringify(last.receita));drawAtend();};}
+function rxLine(e){return `${e.esf||"—"} ${e.cil||""} ${e.eixo?"x"+e.eixo:""} ${e.ad?"add "+e.ad:""}`.trim();}
+
+function liveRxValidate(){const errs=validRx(form.rx);
+  document.querySelectorAll("#rxRows .rxcell").forEach(c=>c.classList.toggle("bad",!!errs[c.dataset.eye+c.dataset.f]));
+  document.getElementById("rxErr").textContent=Object.entries(errs).map(([k,val])=>k.slice(0,2).toUpperCase()+" "+k.slice(2)+": "+val).join("   ");
+  return Object.keys(errs).length===0;}
+
+function saveOrdem(printAfter){
+  if(!form.nome.trim()){toast("Informe o nome do cliente.");return;}
+  if(!liveRxValidate()){toast("Corrija a receita antes de salvar.");return;}
+  if(!form.consent){toast("Marque o consentimento LGPD.");return;}
+  let cli=form.clienteId?S.clientes.find(c=>c.id===form.clienteId):null;
+  if(!cli)cli=S.clientes.find(c=>c.nome.toLowerCase()===form.nome.trim().toLowerCase());
+  if(cli){cli.nome=form.nome.trim();cli.contato=form.contato;cli.endereco=form.endereco;}
+  else{cli={id:uid(),nome:form.nome.trim(),contato:form.contato,endereco:form.endereco};S.clientes.push(cli);}
+  let ordem;
+  if(editingId){ordem=S.ordens.find(o=>o.id===editingId);
+    ordem.clienteId=cli.id;ordem.receita=form.rx;ordem.medidas=form.medidas;
+    ordem.produto={armacao:form.produto.armacao,tipo:form.produto.tipo,indice:form.produto.indice,tratam:form.produto.tratam,obs:form.produto.obs};
+    ordem.valor=form.valor;toast("Pedido atualizado.");
+  }else{ordem={id:uid(),num:S.counters.local,clienteId:cli.id,data:today(),
+      receita:form.rx,medidas:form.medidas,
+      produto:{armacao:form.produto.armacao,tipo:form.produto.tipo,indice:form.produto.indice,tratam:form.produto.tratam,obs:form.produto.obs},
+      valor:form.valor,status:form.status,consent:{aceito:true,data:new Date().toISOString()}};
+    S.ordens.push(ordem);S.counters.local++;toast(fmtG(ordem.num)+" criada.");}
+  saveCliente(cli);saveOrdemDoc(ordem);saveConsultor();
+  const savedId=ordem.id;editingId=null;form=newForm();
+  if(printAfter)printOrdem(savedId,"os");nav("ordens");}
+
+/* ordens */
+function drawOrdens(){
+  const list=[...S.ordens].sort((a,b)=>b.num-a.num);
+  document.getElementById("view").innerHTML=`<div class="ptitle"><h1>Ordens</h1><span class="meta">${S.ordens.length} pedido${S.ordens.length!==1?"s":""}</span></div>
+    <label class="field search"><span class="flab">Buscar</span><input id="ordSearch" placeholder="Cliente ou número"></label><div class="ordens" id="ordList"></div>`;
+  const render=(q="")=>{const box=document.getElementById("ordList");
+    const f=list.filter(o=>{const c=S.clientes.find(x=>x.id===o.clienteId)||{};return (c.nome+" "+fmtG(o.num)+" #"+o.num).toLowerCase().includes(q.toLowerCase());});
+    if(!f.length){box.innerHTML='<div class="empty">Nenhuma ordem ainda.<br>Comece um atendimento.</div>';return;}
+    box.innerHTML="";
+    f.forEach(o=>{const c=S.clientes.find(x=>x.id===o.clienteId)||{nome:"—"};const el=document.createElement("div");el.className="ord";
+      el.innerHTML=`<div class="id">${fmtG(o.num)} <span class="loc">· sua #${o.num}</span></div>
+        <div class="nm">${esc(c.nome)}</div><div class="meta">${brDate(o.data)} · ${esc(o.produto.tipo||"lente")} ${esc(o.produto.indice||"")}</div>
+        <div class="ctrl"><select class="status" data-s="${o.status}">${STATUS.map(([k,l])=>`<option value="${k}" ${o.status===k?"selected":""}>${l}</option>`).join("")}</select>
+          <button class="icobtn" data-a="os">OS</button><button class="icobtn" data-a="recibo">recibo</button>
+          <button class="icobtn" data-a="edit">editar</button><button class="icobtn del" data-a="del">excluir</button></div>`;
+      el.querySelector(".status").addEventListener("change",e=>{o.status=e.target.value;e.target.dataset.s=e.target.value;saveOrdemDoc(o);});
+      el.querySelectorAll("[data-a]").forEach(b=>b.onclick=()=>{const a=b.dataset.a;
+        if(a==="os")printOrdem(o.id,"os");else if(a==="recibo")printOrdem(o.id,"recibo");else if(a==="edit")loadOrdemToForm(o);
+        else if(a==="del"){if(confirm("Excluir "+fmtG(o.num)+"?")){S.ordens=S.ordens.filter(x=>x.id!==o.id);deleteOrdemDoc(o.id);drawOrdens();}}});
+      box.appendChild(el);});};
+  render();document.getElementById("ordSearch").addEventListener("input",e=>render(e.target.value));}
+
+/* transpose */
+function drawFerr(){document.getElementById("view").innerHTML=`<div class="ptitle"><h1>Transposição</h1><span class="meta">± notação</span></div>
+  <div class="card"><p class="hint">Converte a receita quando a lente tem limite de faixa por sinal.</p>
+    <div class="fgrid f2"><label class="field"><span class="flab">Esférico</span><input id="t_esf" inputmode="decimal" placeholder="±0.00"></label>
+      <label class="field"><span class="flab">Cilíndrico</span><input id="t_cil" inputmode="decimal" placeholder="±0.00"></label></div>
+    <label class="field" style="margin-top:11px;max-width:180px"><span class="flab">Eixo</span><input id="t_eixo" inputmode="numeric" placeholder="0–180"></label>
+    <div style="margin-top:15px"><button class="btn pri" id="t_go" style="width:100%">Transpor</button></div>
+    <div class="tout" id="t_out"></div></div>`;
+  document.getElementById("t_go").onclick=()=>{const esf=parseFloat(document.getElementById("t_esf").value),cil=parseFloat(document.getElementById("t_cil").value),
+    eixo=parseInt(document.getElementById("t_eixo").value),out=document.getElementById("t_out");
+    if(isNaN(esf)||isNaN(cil)||isNaN(eixo)||eixo<0||eixo>180){out.className="tout show";out.textContent="Preencha os três campos (eixo 0–180).";return;}
+    const nEsf=esf+cil,nCil=-cil;let nEixo=(eixo+90)%180;if(nEixo===0)nEixo=180;const sg=n=>(n>0?"+":"")+n.toFixed(2);
+    out.className="tout show";out.innerHTML=`Original &nbsp;<b>${sg(esf)} ${sg(cil)} x ${eixo}°</b><br>Transposta &nbsp;<b>${sg(nEsf)} ${sg(nCil)} x ${nEixo}°</b>`;};}
+
+/* ajustes */
+function drawCfg(){document.getElementById("view").innerHTML=`<div class="ptitle"><h1>Ajustes</h1><span class="meta">MEI</span></div>
+  <div class="card"><div class="shead"><span class="n">01</span><span class="bar"></span><h2>Consultor (MEI)</h2></div>
+    <p class="hint">Estes são <b>seus</b> dados (a ótica/consultor emitente). Aparecem no cabeçalho da OS. Não confundir com o contato do cliente, que fica no atendimento.</p>
+    <div class="fgrid f2"><label class="field"><span class="flab">Nome / razão da ótica</span><input id="c_nome" value="${esc(S.config.nome)}"></label>
+      <label class="field"><span class="flab">CNPJ do emitente</span><input id="c_cnpj" value="${esc(S.config.cnpj)}" placeholder="00.000.000/0001-00"></label></div>
+    <label class="field" style="margin-top:11px"><span class="flab">Telefone / WhatsApp do emitente</span><input id="c_contato" type="tel" value="${esc(S.config.contato)}" placeholder="(85) 9 0000-0000"></label></div>
+  <div class="card"><div class="shead"><span class="n">02</span><span class="bar"></span><h2>Numeração</h2></div>
+    <p class="hint">Sua contagem pessoal. A próxima OS será a #${S.counters.local}.</p>
+    <label class="field" style="max-width:200px"><span class="flab">Próxima OS (#)</span><input id="c_local" value="${S.counters.local}" inputmode="numeric"></label>
+    <div style="margin-top:14px"><button class="btn sec" id="c_save" style="max-width:220px">Salvar ajustes</button></div></div>
+  <div class="card"><div class="shead"><span class="n">03</span><span class="bar"></span><h2>Conta</h2></div>
+    <p class="hint">Conectado como ${esc((user&&user.email)||"—")}. Dados na nuvem (Firestore · São Paulo), sincronizados entre seus aparelhos.</p>
+    <button class="btn ghost" id="c_out" style="justify-content:flex-start;padding-left:0">Sair da conta</button></div>`;
+  document.getElementById("c_save").onclick=()=>{S.config.nome=document.getElementById("c_nome").value.trim();
+    S.config.cnpj=document.getElementById("c_cnpj").value.trim();S.config.contato=document.getElementById("c_contato").value.trim();const l=parseInt(document.getElementById("c_local").value);if(l>0)S.counters.local=l;
+    saveConsultor();paintWho();toast("Ajustes salvos.");};
+  document.getElementById("c_out").onclick=()=>auth.signOut();}
+
+/* print — layout Órbita (papel + PDF). Cliente: só nome (minimização). */
+const SEAL='<svg class="seal" viewBox="0 0 48 48" fill="none" stroke="#111" stroke-width="2"><circle cx="24" cy="24" r="20"/><circle cx="24" cy="24" r="12" stroke-dasharray="2 3"/><circle cx="24" cy="24" r="4.2" fill="#111" stroke="none"/><path d="M24 2v6M24 40v6M2 24h6M40 24h6"/></svg>';
+function nBR(x){if(x===""||x==null)return null;const n=parseFloat(x);return isNaN(n)?null:n;}
+function sgBR(x){const n=nBR(x);if(n===null)return null;return (n>0?"+":n<0?"\u2212":"")+Math.abs(n).toFixed(2).replace(".",",");}
+function mmBR(x){const n=nBR(x);return n===null?"—":n.toFixed(1).replace(".",",");}
+function rxRowHTML(o,E){const r=o.receita[E.toLowerCase()],esf=sgBR(r.esf),cil=sgBR(r.cil);
+  const semGrau=esf===null&&cil===null;
+  if(semGrau)return `<tr><th>${E}</th><td colspan="4" class="plano" style="font-family:var(--sans);color:#555;font-weight:600">Sem correção</td></tr>`;
+  const cilTxt=cil===null?`<span style="color:#888">plano</span>`:cil;
+  const eixoTxt=(cil!==null&&r.eixo!=="")?r.eixo+"\u00b0":"—";
+  const adTxt=sgBR(r.ad)||"—";
+  return `<tr><th>${E}</th><td>${esf===null?'<span style="color:#888">plano</span>':esf}</td><td>${cilTxt}</td><td>${eixoTxt}</td><td>${adTxt}</td></tr>`;}
+
+function headHTML(o,title,extra){const otica=esc(S.config.nome||"—");
+  return `<div class="head">
+    <div class="brand">${SEAL}<div><div class="names"><span class="wm">ÓRBITA</span><span class="dash">—</span><span class="oticnome">${otica}</span></div><div class="tag">Sistema de atendimento óptico</div></div></div>
+    <div class="doctype"><div class="dt">${title}</div><div class="num">${fmtG(o.num)}</div><div class="rsub">ref. #${o.num} · ${brDate(o.data)}</div>${extra||""}</div>
+  </div><div class="rulepair"></div>`;}
+function idlineHTML(){const contato=S.config.contato?(" &nbsp;·&nbsp; Tel / WhatsApp "+esc(S.config.contato)):"";
+  return `<div class="idline">CNPJ ${esc(S.config.cnpj||"—")}${contato}</div>`;}
+
+function printOrdem(id,mode){const o=S.ordens.find(x=>x.id===id);if(!o)return;const c=S.clientes.find(x=>x.id===o.clienteId)||{nome:"—"};
+  const trat=o.produto.tratam&&o.produto.tratam.length?o.produto.tratam.join(", "):"—";
+  const tipo=o.produto.tipo?o.produto.tipo.charAt(0).toUpperCase()+o.produto.tipo.slice(1):"—";
+  const receita=`<div class="sec"><div class="lbl">Receita</div>
+     <table class="rxp"><thead><tr><th></th><th>Esférico</th><th>Cilíndrico</th><th>Eixo</th><th>Adição</th></tr></thead>
+     <tbody>${rxRowHTML(o,"OD")}${rxRowHTML(o,"OE")}</tbody></table></div>`;
+  const status=esc((STATUS.find(s=>s[0]===o.status)||["",""])[1]);
+  let html;
+  if(mode==="recibo"){
+    html=`<div class="doc recibo">${headHTML(o,"Recibo / Orçamento")}${idlineHTML()}
+      <div class="sec"><div class="lbl">Cliente</div><div class="cliente">${esc(c.nome)}</div></div>
+      ${receita}
+      <div class="sec"><div class="lbl">Produto</div><div class="prod"><span class="k">Armação:</span> ${esc(o.produto.armacao||"—")} &nbsp;·&nbsp; <span class="k">Lente:</span> ${tipo} · ${esc(o.produto.indice||"—")}<br><span class="k">Tratamentos:</span> ${esc(trat)}</div></div>
+      <div class="valor"><span class="vk">Valor total</span><span class="vv">${o.valor?("R$ "+esc(o.valor)):"—"}</span></div>
+      <div class="foot"><div class="consent">Obrigado pela preferência. Consentimento LGPD registrado em ${brDate(o.data)}.</div>
+        <div class="sign"><div class="sl">Assinatura do cliente</div></div></div>
+      <div class="genby">documento gerado por Órbita</div></div>`;
+  }else{
+    const multi=/multifocal|bifocal|progress/i.test(o.produto.tipo||"")||!!sgBR(o.receita.od.ad)||!!sgBR(o.receita.oe.ad);
+    const dnpO=nBR(o.medidas.dnpOD),dnpE=nBR(o.medidas.dnpOE);
+    const dpTot=(dnpO!=null&&dnpE!=null)?(dnpO+dnpE).toFixed(1).replace(".",","):"—";
+    const centragem=`<table class="ctab"><thead><tr><th></th><th>DNP</th><th>Altura</th><th>DP&nbsp;total</th></tr></thead>
+        <tbody>
+          <tr><th>OD</th><td>${mmBR(o.medidas.dnpOD)}</td><td>${mmBR(o.medidas.altOD)}</td><td rowspan="2" class="dptot">${dpTot}</td></tr>
+          <tr><th>OE</th><td>${mmBR(o.medidas.dnpOE)}</td><td>${mmBR(o.medidas.altOE)}</td></tr>
+        </tbody></table>`;
+    const lentetab=`<table class="ptab"><tbody>
+          <tr><th>Lente</th><td>${tipo}${multi?' <b>· conferir altura</b>':''}</td></tr>
+          <tr><th>Índice</th><td>${esc(o.produto.indice||"—")}</td></tr>
+          <tr><th>Armação</th><td>${esc(o.produto.armacao||"—")}</td></tr>
+        </tbody></table>`;
+    const tratArr=(o.produto.tratam&&o.produto.tratam.length)?o.produto.tratam:[];
+    const tratHTML=tratArr.length?tratArr.map(t=>`<span class="trt"><span class="box">\u2713</span>${esc(t)}</span>`).join(""):'<span style="color:#666">—</span>';
+    const doc=`<div class="doc os">${headHTML(o,"Ordem de Serviço",`<div class="statuspill">${status}</div>`)}${idlineHTML()}
+      <div class="clibox"><div class="clicell"><div class="lbl">Cliente</div><div class="cliente">${esc(c.nome)}</div></div>
+        <div class="codecell">código<br>QR</div></div>
+      ${receita}
+      <div class="grid2">${centragem}${lentetab}</div>
+      <div class="tratline"><span class="lbl">Tratamentos</span><div class="trats">${tratHTML}</div></div>
+      <div class="obsbox"><span class="lbl">Observações</span><div class="obstext">${esc(o.produto.obs||"")}</div></div>
+      <div class="lab3"><div class="labh">Uso do laboratório</div><div class="lab3row">
+        <div class="lc"><div class="ck">Controle interno</div><div class="cline"></div></div>
+        <div class="lc"><div class="ck">Recebido em</div><div class="cline"></div></div>
+        <div class="lc"><div class="ck">Previsão de entrega</div><div class="cline"></div></div></div></div>
+      <div class="foot"><div class="consent">Consentimento LGPD do titular registrado em ${brDate(o.data)} — tratamento restrito à confecção e ao histórico do pedido.</div>
+        <div class="signs"><div class="sign"><div class="sl">Assinatura do cliente</div></div><div class="sign"><div class="sl">Assinatura / carimbo lab.</div></div></div></div>
+      <div class="genby">documento gerado por Órbita</div></div>`;
+    const verso=`<div class="osverso"><div class="versobox">Área reservada<br>QR de divulgação<br>(verso)</div><div class="versobrand">ÓRBITA — ${esc(S.config.nome||"")}</div></div>`;
+    html=`<div class="ostwo">${doc}${verso}</div>`;
+  }
+  const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent||"");
+  const rot = isIOS && mode!=="recibo";
+  document.body.classList.toggle("printrot", rot);
+  document.getElementById("pagestyle").textContent = (mode==="recibo")
+    ? "@page{size:210mm 297mm;margin:10mm}"
+    : (rot ? "@page{size:210mm 297mm;margin:0}" : "@page{size:297mm 210mm;margin:8mm}");
+  document.getElementById("printDoc").innerHTML=html;
+  setTimeout(()=>window.print(),70);}
+
+/* boot */
+function paintWho(){document.getElementById("whoName").textContent=S.config.nome||"Configurar";
+  document.getElementById("whoAv").textContent=initials(S.config.nome);}
+function draw(){if(current==="atend")drawAtend();else if(current==="ordens")drawOrdens();else if(current==="ferr")drawFerr();else if(current==="cfg")drawCfg();}
+document.querySelectorAll("#nav button").forEach(b=>b.onclick=()=>nav(b.dataset.t));
+let blurT=null;
+function isField(el){return el&&el.matches&&el.matches("input,textarea,select");}
+document.addEventListener("focusin",e=>{if(isField(e.target)){clearTimeout(blurT);document.body.classList.add("typing");}});
+document.addEventListener("focusout",e=>{if(isField(e.target)){clearTimeout(blurT);blurT=setTimeout(()=>{if(!isField(document.activeElement))document.body.classList.remove("typing");},120);}});
+
+function showLogin(){document.getElementById("app").style.display="none";document.getElementById("nav").style.display="none";document.getElementById("login").hidden=false;}
+async function startApp(){
+  document.getElementById("login").hidden=true;document.getElementById("app").style.display="";document.getElementById("nav").style.display="";
+  try{await repoLoadAll();}catch(e){console.error(e);toast("Erro ao carregar. Verifique a conexão.");S=defaults();}
+  paintWho();current="atend";document.body.classList.add("atend");
+  document.querySelectorAll("#nav button").forEach(b=>b.classList.toggle("on",b.dataset.t==="atend"));
+  draw();
+}
+auth.onAuthStateChanged(u=>{if(u){user=u;startApp();}else{user=null;showLogin();}});
+document.getElementById("loginBtn").onclick=()=>auth.signInWithPopup(new firebase.auth.GoogleAuthProvider()).catch(e=>{console.error(e);toast("Falha no login.");});
+</script>
+</body>
+</html>
