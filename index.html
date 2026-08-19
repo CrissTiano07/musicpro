@@ -292,14 +292,19 @@
   .doc .valor{border:2px solid #000;display:flex;justify-content:space-between;align-items:center;padding:9px 14px;margin-top:11px}
   .doc .valor .vk{font-size:10px;letter-spacing:.14em;text-transform:uppercase;font-weight:700}
   .doc .valor .vv{font-family:var(--mono);font-size:22px;font-weight:700}
-  @media print{ .app,.savebar,.nav,#toast,#login{display:none!important} #printDoc{display:block}
-    body.printrot{width:210mm;height:297mm;overflow:hidden;margin:0}
-    body.printrot #printDoc{position:absolute;left:-51mm;top:43.5mm;width:297mm;height:210mm;padding:6mm;
-      transform:rotate(90deg);transform-origin:center center}
-  }
-  /* OS = meia folha paisagem (A5), com linha de dobra/corte à direita */
-  .doc.os{width:14.3cm;min-height:19cm;border-right:1px dashed #999;padding-right:.5cm;position:relative;display:flex;flex-direction:column}
-  .doc.os .foot{margin-top:auto;padding-top:10px}
+  @media print{ .app,.savebar,.nav,#toast,#login{display:none!important} #printDoc{display:block} }
+  /* OS = retrato; face 14,5x14,5 (esquerda/topo) + abas dobráveis (direita: QR, base: assinaturas) */
+  .ossheet{position:relative;width:210mm;min-height:255mm}
+  .doc.os.osface{position:absolute;top:0;left:0;width:145mm;height:145mm;padding:7mm 6mm;
+    border-right:1px dashed #999;border-bottom:1px dashed #999;overflow:hidden;display:block}
+  .osright{position:absolute;top:0;left:145mm;width:63mm;height:145mm;padding:8mm 4mm;
+    display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;border-bottom:1px dashed #999}
+  .osright .versobox{border:1px dashed #ccc;border-radius:8px;width:100%;flex:1;max-height:9cm;display:flex;
+    align-items:center;justify-content:center;color:#bbb;font-size:8.5px;letter-spacing:.12em;text-transform:uppercase;line-height:2}
+  .osright .versobrand{margin-top:12px;color:#bbb;font-size:8px;letter-spacing:.12em;text-transform:uppercase}
+  .doc.os.osbottom{position:absolute;top:145mm;left:0;width:145mm;padding:6mm;display:block;border:none}
+  .doc.os.osbottom .foot{margin-top:14px;padding-top:0}
+  .flaptag{margin-top:9px;text-align:center;font-size:7px;letter-spacing:.18em;text-transform:uppercase;color:#bbb}
   .doc.os .head{flex-wrap:nowrap;gap:12px;align-items:flex-start}
   .doc.os .brand{align-items:flex-start;flex:1 1 auto;min-width:0}
   .doc.os .names{flex-wrap:wrap;align-items:baseline;column-gap:8px;row-gap:0}
@@ -360,12 +365,6 @@
   .doc.os .sign{width:5cm}
   .doc.os .sign .sl{font-size:7.5px;margin-top:20px}
   .doc.os .genby{font-size:6.5px}
-  /* verso (metade direita) — reserva do QR de divulgação */
-  .ostwo{display:flex;align-items:stretch}
-  .osverso{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding-left:1cm}
-  .osverso .versobox{border:1px dashed #ccc;border-radius:8px;width:6cm;height:6cm;display:flex;align-items:center;
-    justify-content:center;text-align:center;color:#bbb;font-size:9px;letter-spacing:.14em;text-transform:uppercase;line-height:2.1}
-  .osverso .versobrand{margin-top:14px;color:#bbb;font-size:9px;letter-spacing:.14em;text-transform:uppercase}
   /* login */
   .login{position:fixed;left:0;right:0;top:0;height:100vh;height:100dvh;z-index:60;display:flex;align-items:center;justify-content:center;background:var(--bg);padding:24px}
   .login[hidden]{display:none}
@@ -879,29 +878,28 @@ function printOrdem(id,mode){const o=S.ordens.find(x=>x.id===id);if(!o)return;co
         </tbody></table>`;
     const tratArr=(o.produto.tratam&&o.produto.tratam.length)?o.produto.tratam:[];
     const tratHTML=tratArr.length?tratArr.map(t=>`<span class="trt"><span class="box">\u2713</span>${esc(t)}</span>`).join(""):'<span style="color:#666">—</span>';
-    const doc=`<div class="doc os">${headHTML(o,"Ordem de Serviço",`<div class="statuspill">${status}</div>`)}${idlineHTML()}
+    const face=`<div class="doc os osface">${headHTML(o,"Ordem de Serviço",`<div class="statuspill">${status}</div>`)}${idlineHTML()}
       <div class="clibox"><div class="clicell"><div class="lbl">Cliente</div><div class="cliente">${esc(c.nome)}</div></div>
         <div class="codecell">código<br>QR</div></div>
       ${receita}
       <div class="grid2">${centragem}${lentetab}</div>
       <div class="tratline"><span class="lbl">Tratamentos</span><div class="trats">${tratHTML}</div></div>
-      <div class="obsbox"><span class="lbl">Observações</span><div class="obstext">${esc(o.produto.obs||"")}</div></div>
+      <div class="obsbox"><span class="lbl">Observações</span><div class="obstext">${esc(o.produto.obs||"")}</div></div></div>`;
+    const right=`<div class="osright"><div class="versobox">Área reservada<br>QR de divulgação</div>
+      <div class="versobrand">ÓRBITA — ${esc(S.config.nome||"")}</div><div class="flaptag">verso · dobre atrás</div></div>`;
+    const bottom=`<div class="doc os osbottom">
       <div class="lab3"><div class="labh">Uso do laboratório</div><div class="lab3row">
         <div class="lc"><div class="ck">Controle interno</div><div class="cline"></div></div>
         <div class="lc"><div class="ck">Recebido em</div><div class="cline"></div></div>
         <div class="lc"><div class="ck">Previsão de entrega</div><div class="cline"></div></div></div></div>
       <div class="foot"><div class="consent">Consentimento LGPD do titular registrado em ${brDate(o.data)} — tratamento restrito à confecção e ao histórico do pedido.</div>
         <div class="signs"><div class="sign"><div class="sl">Assinatura do cliente</div></div><div class="sign"><div class="sl">Assinatura / carimbo lab.</div></div></div></div>
-      <div class="genby">documento gerado por Órbita</div></div>`;
-    const verso=`<div class="osverso"><div class="versobox">Área reservada<br>QR de divulgação<br>(verso)</div><div class="versobrand">ÓRBITA — ${esc(S.config.nome||"")}</div></div>`;
-    html=`<div class="ostwo">${doc}${verso}</div>`;
+      <div class="genby">documento gerado por Órbita</div><div class="flaptag">dobre atrás</div></div>`;
+    html=`<div class="ossheet">${face}${right}${bottom}</div>`;
   }
-  const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent||"");
-  const rot = isIOS && mode!=="recibo";
-  document.body.classList.toggle("printrot", rot);
   document.getElementById("pagestyle").textContent = (mode==="recibo")
     ? "@page{size:210mm 297mm;margin:10mm}"
-    : (rot ? "@page{size:210mm 297mm;margin:0}" : "@page{size:297mm 210mm;margin:8mm}");
+    : "@page{size:210mm 297mm;margin:0}";
   document.getElementById("printDoc").innerHTML=html;
   setTimeout(()=>window.print(),70);}
 
