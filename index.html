@@ -294,10 +294,10 @@
   .doc .valor .vv{font-family:var(--mono);font-size:22px;font-weight:700}
   @media print{ .app,.savebar,.nav,#toast,#login{display:none!important} #printDoc{display:block} }
   /* OS = paisagem meia-folha: OS à esquerda + verso QR à direita (saída em PDF) */
-  .ostwo{display:flex;align-items:stretch;width:29.7cm}
-  .doc.os{width:14.6cm;min-height:20cm;border-right:1px dashed #999;padding:.2cm .5cm 0 .2cm;position:relative;display:flex;flex-direction:column}
+  .ostwo{display:flex;align-items:stretch}
+  .doc.os{width:14.6cm;min-height:20cm;border-right:1px dashed #999;padding:.2cm .5cm 0 .3cm;position:relative;display:flex;flex-direction:column}
   .doc.os .foot{margin-top:auto;padding-top:10px}
-  .osverso{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding-left:1cm}
+  .osverso{width:14cm;flex:none;display:flex;flex-direction:column;align-items:center;justify-content:center;padding-left:1cm}
   .osverso .versobox{border:1px dashed #ccc;border-radius:8px;width:7cm;height:7cm;display:flex;align-items:center;
     justify-content:center;text-align:center;color:#bbb;font-size:9px;letter-spacing:.14em;text-transform:uppercase;line-height:2.1}
   .osverso .versobrand{margin-top:14px;color:#bbb;font-size:9px;letter-spacing:.14em;text-transform:uppercase}
@@ -898,11 +898,11 @@ function printOrdem(id,mode){const o=S.ordens.find(x=>x.id===id);if(!o)return;co
 function gerarPDF(html, mode, nome){
   const el=document.getElementById("printDoc");
   el.innerHTML=html;
-  el.style.cssText="position:fixed;top:0;left:-20000px;display:block;background:#fff;z-index:-1;width:"+(mode==="recibo"?"210mm":"29.7cm");
+  el.style.cssText="position:absolute;left:0;top:2600px;background:#fff;width:"+(mode==="recibo"?"210mm":"29cm");
   const target=el.firstElementChild||el;
   const opt={margin:0,filename:(mode==="recibo"?"Recibo-":"OS-")+nome+".pdf",
     image:{type:"jpeg",quality:0.98},
-    html2canvas:{scale:2,useCORS:true,backgroundColor:"#ffffff",windowWidth:target.scrollWidth},
+    html2canvas:{scale:2,useCORS:true,backgroundColor:"#ffffff"},
     jsPDF:{unit:"mm",format:"a4",orientation:(mode==="recibo"?"portrait":"landscape")}};
   const cleanup=()=>{el.style.cssText="";el.innerHTML="";};
   const run=()=>{
