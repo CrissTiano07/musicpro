@@ -437,7 +437,8 @@ const INDICES=["resina 1.50","resina 1.56","policarbonato","trivex","resina 1.61
 const TRATAM=["AR","fotossensível","blue light","hidrofóbico","UV"];
 const STATUS=[["enviado","enviado ao lab"],["confeccao","em confecção"],["pronto","pronto"],["entregue","entregue"]];
 const IC={save:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M5 4h11l3 3v13H5z"/><path d="M8 4v5h7M8 20v-6h8v6"/></svg>',
-  print:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M6 9V4h12v5M6 18H4v-6a2 2 0 012-2h12a2 2 0 012 2v6h-2M8 14h8v6H8z"/></svg>'};
+  print:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M6 9V4h12v5M6 18H4v-6a2 2 0 012-2h12a2 2 0 012 2v6h-2M8 14h8v6H8z"/></svg>',
+  download:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 3v11M7.5 9.5 12 14l4.5-4.5M5 20h14"/></svg>'};
 let S=null, editingId=null, current="atend", form=null;
 
 /* --- camada de dados: único ponto que conhece o Firestore --- */
@@ -692,7 +693,7 @@ function drawAtend(){
 
   <div class="savebar"><div class="w">
     <button class="btn pri" id="saveBtn">${IC.save}${editing?"Salvar alterações":"Salvar pedido"}</button>
-    <button class="btn sec" id="savePrintBtn">${IC.print}Salvar e imprimir</button>
+    <button class="btn sec" id="savePrintBtn">${IC.download}Gerar PDF</button>
   </div></div>`;
 
   const nameEl=document.getElementById("f_nome");
