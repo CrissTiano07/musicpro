@@ -459,6 +459,16 @@ function deleteOrdemDoc(id){return docBase().collection("ordens").doc(id).delete
 
 function uid(){return Math.random().toString(36).slice(2,9);}
 function toast(m){const t=document.getElementById("toast");t.textContent=m;t.classList.add("show");setTimeout(()=>t.classList.remove("show"),2000);}
+/* háptica: vibração no Android; melhor-esforço no iOS (switch); silêncio se não houver suporte */
+let _hapSw=null;
+function haptic(){
+  try{
+    if(typeof navigator!=="undefined" && navigator.vibrate){ navigator.vibrate(9); return; }
+    if(!_hapSw){ _hapSw=document.createElement("input"); _hapSw.type="checkbox"; _hapSw.setAttribute("switch","");
+      _hapSw.style.cssText="position:absolute;left:-9999px;opacity:0;pointer-events:none;width:0;height:0"; document.body.appendChild(_hapSw); }
+    _hapSw.checked=!_hapSw.checked;
+  }catch(e){}
+}
 function esc(s){return String(s==null?"":s).replace(/[&<>"]/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[m]));}
 function fmtG(n){return "OS-"+String(n).padStart(6,"0");}
 function today(){return new Date().toISOString().slice(0,10);}
@@ -493,7 +503,7 @@ function refreshRxRows(){const el=document.getElementById("rxRows");if(el){el.in
 
 /* receita modal */
 let rxModal=null;
-function openRxModal(eye,field){const g=form.rx[eye],ad=toMQ(g.ad);
+function openRxModal(eye,field){haptic();const g=form.rx[eye],ad=toMQ(g.ad);
   rxModal={eye,field,buf:{esf:toMQ(g.esf),cil:toMQ(g.cil),eixo:(g.eixo||""),ad:{mag:ad.mag,q:ad.q}}};
   document.getElementById("rxModal").hidden=false;document.body.style.overflow="hidden";renderRxModal();}
 function closeRxModal(commit){const m=document.getElementById("rxModal");
@@ -506,7 +516,7 @@ function fmtBig(f){const b=rxModal.buf;
   if(f==="eixo")return b.eixo===""?"\u2014":b.eixo+"\u00b0";
   return mqDisp(f==="ad"?b.ad:b[f],f!=="ad");}
 function fmtBigFor(ff){return fmtBig(ff);}
-function rxKey(k){const f=rxModal.field,b=rxModal.buf;
+function rxKey(k){haptic();const f=rxModal.field,b=rxModal.buf;
   if(f==="eixo"){if(k==="back")b.eixo=b.eixo.slice(0,-1);
     else if(k==="clear")b.eixo="";
     else if(/[0-9]/.test(k)){let n=(b.eixo==="0"?"":b.eixo)+k;if(n.length<=3&&parseInt(n)<=180)b.eixo=n;}renderRxModal();return;}
@@ -516,7 +526,7 @@ function rxKey(k){const f=rxModal.field,b=rxModal.buf;
   else if(k==="sign"){if(f==="esf"||f==="cil")t.sign=t.sign==="-"?"+":"-";}
   else if(/[0-9]/.test(k)){const m=t.mag==="0"?"":t.mag;if(m.length<2)t.mag=m+k;}
   renderRxModal();}
-function rxStep(dir){const f=rxModal.field,b=rxModal.buf;
+function rxStep(dir){haptic();const f=rxModal.field,b=rxModal.buf;
   if(f==="eixo"){let n=(parseInt(b.eixo||"0")||0)+dir*5;n=Math.max(0,Math.min(180,n));b.eixo=String(n);renderRxModal();return;}
   const t=rxBuf();let total=parseInt(t.mag||"0")*100+t.q+dir*25;if(total<0)total=0;
   const mi=Math.floor(total/100);t.q=total-mi*100;t.mag=String(mi);renderRxModal();}
@@ -566,17 +576,17 @@ function mRowsHTML(){return ["OD","OE"].map(E=>{const e=E.toLowerCase();return `
 function wireMeasCells(){document.querySelectorAll("#mRows .mcell").forEach(c=>c.onclick=()=>openMeasModal(c.dataset.k));}
 function refreshMeas(){const el=document.getElementById("mRows");if(el){el.innerHTML=mRowsHTML();wireMeasCells();}updateDP();}
 let measModal=null;
-function openMeasModal(field){const g=form.medidas,buf={};MEAS_FIELDS.forEach(k=>buf[k]=toMH(g[k]));
+function openMeasModal(field){haptic();const g=form.medidas,buf={};MEAS_FIELDS.forEach(k=>buf[k]=toMH(g[k]));
   measModal={field,buf};document.getElementById("rxModal").hidden=false;document.body.style.overflow="hidden";renderMeasModal();}
 function closeMeasModal(commit){const m=document.getElementById("rxModal");
   if(commit&&measModal){MEAS_FIELDS.forEach(k=>form.medidas[k]=mhVal(measModal.buf[k]));refreshMeas();}
   measModal=null;m.hidden=true;document.body.style.overflow="";}
-function measKey(k){const t=measModal.buf[measModal.field];
+function measKey(k){haptic();const t=measModal.buf[measModal.field];
   if(k==="back"){if(t.mag!=="")t.mag=t.mag.slice(0,-1);else t.h=0;}
   else if(k==="clear"){t.mag="";t.h=0;}
   else if(/[0-9]/.test(k)){const m=t.mag==="0"?"":t.mag;if(m.length<2)t.mag=m+k;}
   renderMeasModal();}
-function measStep(dir){const t=measModal.buf[measModal.field];let total=parseInt(t.mag||"0")*10+t.h+dir*5;if(total<0)total=0;
+function measStep(dir){haptic();const t=measModal.buf[measModal.field];let total=parseInt(t.mag||"0")*10+t.h+dir*5;if(total<0)total=0;
   const mi=Math.floor(total/10);t.h=total-mi*10;t.mag=String(mi);renderMeasModal();}
 function measGoto(f){measModal.field=f;renderMeasModal();}
 function measNav(dir){const i=MEAS_FIELDS.indexOf(measModal.field)+dir;if(i>=0&&i<MEAS_FIELDS.length){measModal.field=MEAS_FIELDS[i];renderMeasModal();}}
@@ -708,19 +718,19 @@ function drawAtend(){
   wireRxCells();
   wireMeasCells();updateDP();
   document.getElementById("p_arm").addEventListener("input",e=>form.produto.armacao=e.target.value);
-  document.querySelectorAll("#tipoChips .chip").forEach(ch=>ch.addEventListener("click",()=>{
+  document.querySelectorAll("#tipoChips .chip").forEach(ch=>ch.addEventListener("click",()=>{haptic();
     const v=ch.dataset.v;form.produto.tipo=(form.produto.tipo===v)?"":v;
     document.querySelectorAll("#tipoChips .chip").forEach(x=>x.classList.toggle("on",x.dataset.v===form.produto.tipo));}));
-  document.querySelectorAll("#indList .opt").forEach(op=>op.addEventListener("click",()=>{
+  document.querySelectorAll("#indList .opt").forEach(op=>op.addEventListener("click",()=>{haptic();
     const v=op.dataset.v;form.produto.indice=(form.produto.indice===v)?"":v;
     document.querySelectorAll("#indList .opt").forEach(x=>x.classList.toggle("on",x.dataset.v===form.produto.indice));}));
   document.getElementById("p_valor").addEventListener("input",e=>form.valor=e.target.value);
   document.getElementById("p_obs").addEventListener("input",e=>form.produto.obs=e.target.value);
-  document.querySelectorAll("#tratChips .chip").forEach(ch=>ch.addEventListener("click",()=>{
+  document.querySelectorAll("#tratChips .chip").forEach(ch=>ch.addEventListener("click",()=>{haptic();
     const t=ch.dataset.t,i=form.produto.tratam.indexOf(t);if(i>=0)form.produto.tratam.splice(i,1);else form.produto.tratam.push(t);ch.classList.toggle("on");}));
   document.getElementById("consentChk").addEventListener("change",e=>form.consent=e.target.checked);
-  document.getElementById("saveBtn").onclick=()=>saveOrdem(false);
-  document.getElementById("savePrintBtn").onclick=()=>saveOrdem(true);
+  document.getElementById("saveBtn").onclick=()=>{haptic();saveOrdem(false);};
+  document.getElementById("savePrintBtn").onclick=()=>{haptic();saveOrdem(true);};
   if(editing)document.getElementById("cancelEdit").onclick=()=>{editingId=null;form=newForm();nav("atend");};
 }
 
